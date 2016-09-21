@@ -1,0 +1,53 @@
+#!/usr/bin/expect
+
+set timeout 1
+spawn ./acyclic
+
+expect_before {
+    timeout { exit 1 }
+}
+
+expect "acyclic started"
+expect "$ "
+send "\t"
+expect ""
+send "\r"
+
+expect "$ "
+send "\t\t"
+expect "help greet rocky rockie same sametext exit"
+send "\r"
+
+expect "$ "
+send "r\t"
+expect ""
+send "\t"
+expect "rocky rockie"
+send "\r"
+expect "command not found"
+
+expect "$ "
+send "h\t"
+expect "elp "
+send "g\t"
+expect "reet "
+send "\r"
+
+expect "$ "
+send "greet me\r"
+expect "hello from me"
+
+expect "$ "
+send "help greet m\t"
+send "e"
+expect "help greet me"
+send "\r"
+
+expect "$ "
+send "same\t\t"
+expect "same sametext"
+send "\r"
+
+expect "$ "
+
+exit 0
