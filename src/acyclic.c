@@ -365,9 +365,14 @@ static void acyclic_ac(
         }
 
         /* update found arguments */
-        a->args[a->arg_cnt].name = (cmds_found) ? cmds_found->name : arg;
+        if (cmds_found && (cmds_found->len == arg_len)) {
+            a->args[a->arg_cnt].name = cmds_found->name;
+            a->args[a->arg_cnt].cmd = cmds_found;
+        } else {
+            a->args[a->arg_cnt].name = arg;
+            a->args[a->arg_cnt].cmd = NULL;
+        }
         a->args[a->arg_cnt].len = arg_len;
-        a->args[a->arg_cnt].cmd = cmds_found;
         a->arg_cnt++;
 
         /* check if next argument can be stored */
