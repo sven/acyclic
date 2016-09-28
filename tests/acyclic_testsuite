@@ -15,7 +15,7 @@ send "\r"
 
 expect "$ "
 send "\t\t"
-expect "help greet rocky rockie same sametext exit"
+expect "help test greet rocky rockie same sametext exit"
 send "\r"
 
 expect "$ "
@@ -47,6 +47,10 @@ expect "$ "
 send "same\t\t"
 expect "same sametext"
 send "\r"
+
+expect "$ "
+send "test o\r"
+expect "args: \\\[*test\\\] \\\[o\\\]"
 
 expect "$ "
 

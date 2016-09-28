@@ -17,6 +17,7 @@
 uint8_t cmd_help_func(struct ACYCLIC_T *a);
 uint8_t cmd_greet_func(struct ACYCLIC_T *a);
 uint8_t cmd_exit_func(struct ACYCLIC_T *a);
+uint8_t cmd_test_func(struct ACYCLIC_T *a);
 
 
 /*****************************************************************************/
@@ -33,6 +34,8 @@ uint8_t cmd_exit_func(struct ACYCLIC_T *a);
 #define CMD_SAMETEXT    "sametext"
 #define CMD_EXIT        "exit"
 #define CMD_ME          "me"
+#define CMD_TEST        "test"
+#define CMD_TEST_ONE    "one"
 
 
 uint8_t cmd_help_func(
@@ -47,6 +50,32 @@ uint8_t cmd_help_func(
     PUTS_LINE_INF("********");
     PUTS_LINE_INF("[help]   greet - show greeting");
     ACYCLIC_MACRO_NEWLINE();
+
+    return 0;
+}
+
+
+uint8_t cmd_test_func(
+    struct ACYCLIC_T *a
+)
+{
+    unsigned int cnt_arg;
+    unsigned int pos_arg;
+
+    if (a->arg_cnt) {
+        PUTS_INF("args: ");
+        for (cnt_arg = 0; cnt_arg < a->arg_cnt; cnt_arg++) {
+            PUTS_INF("[");
+            if (a->args[cnt_arg].cmd) {
+                PUTC('*');
+            }
+            for (pos_arg = 0; pos_arg < a->args[cnt_arg].len; pos_arg++) {
+                PUTC(a->args[cnt_arg].name[pos_arg]);
+            }
+            PUTS_INF("] ");
+        }
+        ACYCLIC_MACRO_NEWLINE();
+    }
 
     return 0;
 }
@@ -112,6 +141,12 @@ int acyclic_cmd_reg(
     res |= acyclic_cmd_add(a, &elem->sub, CMD_SPEEX, NULL, NULL);
     res |= acyclic_cmd_add(a, &elem->sub, CMD_SMAXX, NULL, NULL);
     res |= acyclic_cmd_add(a, &elem->sub, CMD_SNUFZ, NULL, NULL);
+
+    /* test */
+    res |= acyclic_cmd_add(a, &a->cmds, CMD_TEST, cmd_test_func, &elem);
+
+    /* test: one */
+    res |= acyclic_cmd_add(a, &elem->sub, CMD_TEST_ONE, NULL, NULL);
 
     /* greet */
     res |= acyclic_cmd_add(a, &a->cmds, CMD_GREET, cmd_greet_func, &elem);
