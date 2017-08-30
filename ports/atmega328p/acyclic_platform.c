@@ -107,7 +107,7 @@ void acyclic_plat_puts(
     const char *s
 )
 {
-    for (; s; s++) {
+    for (; *s; s++) {
         acyclic_plat_putc(*s);
     }
 }
