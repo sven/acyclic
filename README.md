@@ -18,17 +18,19 @@
   * Install necessary compilers, tools and libs: gcc or avr-gcc
   * Compile your port
 
+```
     # Linux (runs a little test script after compilation)
     make linux
     ./acyclic
-    
+
     # Atmega8
     make atmega8
     make flash_atmega8
-    
+
     # Atmega328p
     make atmega328p
     make flash_arduino_nano
+```
 
 
 ## Contributors
