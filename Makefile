@@ -54,6 +54,10 @@ flash_atmega328p:
 	sudo avrdude -v -pm328p -c arduino -P/dev/ttyUSB0 -b115200 -D -U flash:w:acyclic.hex:i
 
 
+flash_arduino_nano:
+	sudo avrdude -v -pm328p -c arduino -P/dev/ttyUSB0 -b57600 -D -U flash:w:acyclic.hex:i
+
+
 reset_atmega8:
 	sudo avrdude -p ATmega8 -c usbasp
 
