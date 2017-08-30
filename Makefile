@@ -21,6 +21,7 @@ linux:
 	@echo
 	@echo
 	@echo "*** Tests: successful ***"
+	@size acyclic
 
 
 atmega8:
