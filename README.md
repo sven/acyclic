@@ -8,9 +8,9 @@
 
 ## Ports
 
-  * Linux
-  * Atmega8
-  * Atmega328p
+  * Linux (z.B. Ubuntu 16.10)
+  * Atmega8 (z.B. myAVR Board MK1)
+  * Atmega328p (z.B. Arduino Uno, Arduino Nano)
 
 
 ## Contributors
