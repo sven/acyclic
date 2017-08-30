@@ -44,12 +44,12 @@ uint8_t cmd_help_func(
 {
     ACYCLIC_UNUSED(a);
 
-    ACYCLIC_MACRO_NEWLINE();
-    PUTS_LINE_INF("********");
-    PUTS_LINE_INF("* help *");
-    PUTS_LINE_INF("********");
-    PUTS_LINE_INF("[help]   greet - show greeting");
-    ACYCLIC_MACRO_NEWLINE();
+    ACYCLIC_PLAT_NEWLINE();
+    ACYCLIC_PLAT_PUTS_NL("********");
+    ACYCLIC_PLAT_PUTS_NL("* help *");
+    ACYCLIC_PLAT_PUTS_NL("********");
+    ACYCLIC_PLAT_PUTS_NL("[help]   greet - show greeting");
+    ACYCLIC_PLAT_NEWLINE();
 
     return 0;
 }
@@ -63,18 +63,18 @@ uint8_t cmd_test_func(
     unsigned int pos_arg;
 
     if (a->arg_cnt) {
-        PUTS_INF("args: ");
+        ACYCLIC_PLAT_PUTS("args: ");
         for (cnt_arg = 0; cnt_arg < a->arg_cnt; cnt_arg++) {
-            PUTS_INF("[");
+            ACYCLIC_PLAT_PUTC('[');
             if (a->args[cnt_arg].cmd) {
-                PUTC('*');
+                ACYCLIC_PLAT_PUTC('*');
             }
             for (pos_arg = 0; pos_arg < a->args[cnt_arg].len; pos_arg++) {
-                PUTC(a->args[cnt_arg].name[pos_arg]);
+                ACYCLIC_PLAT_PUTC(a->args[cnt_arg].name[pos_arg]);
             }
-            PUTS_INF("] ");
+            ACYCLIC_PLAT_PUTS("] ");
         }
-        ACYCLIC_MACRO_NEWLINE();
+        ACYCLIC_PLAT_NEWLINE();
     }
 
     return 0;
@@ -90,18 +90,18 @@ uint8_t cmd_greet_func(
 #endif
     uint8_t cnt;
 
-    ACYCLIC_MACRO_NEWLINE();
-    PUTS_LINE_INF("*********");
-    PUTS_LINE_INF("* greet *");
-    PUTS_LINE_INF("*********");
-    PUTS_LINE_INF("[greet]  hello from me");
-    PUTS_LINE_INF("[greet]  arguments:");
+    ACYCLIC_PLAT_NEWLINE();
+    ACYCLIC_PLAT_PUTS_NL("*********");
+    ACYCLIC_PLAT_PUTS_NL("* greet *");
+    ACYCLIC_PLAT_PUTS_NL("*********");
+    ACYCLIC_PLAT_PUTS_NL("[greet]  hello from me");
+    ACYCLIC_PLAT_PUTS_NL("[greet]  arguments:");
 
     for (cnt = 0; cnt < a->arg_cnt; cnt++) {
-        PRINTF("[greet]  arg: %.*s\n", a->args[cnt].len, a->args[cnt].name);
+        ACYCLIC_PLAT_PRINTF("[greet]  arg: %.*s\n", a->args[cnt].len, a->args[cnt].name);
     }
 
-    ACYCLIC_MACRO_NEWLINE();
+    ACYCLIC_PLAT_NEWLINE();
 
     return 0;
 }
@@ -115,12 +115,12 @@ uint8_t cmd_exit_func(
 
     acyclic_flg_exit = 1;
 
-    ACYCLIC_MACRO_NEWLINE();
-    PUTS_LINE_INF("*******");
-    PUTS_LINE_INF("* exit *");
-    PUTS_LINE_INF("********");
-    PUTS_LINE_INF("[exit]  bye");
-    ACYCLIC_MACRO_NEWLINE();
+    ACYCLIC_PLAT_NEWLINE();
+    ACYCLIC_PLAT_PUTS_NL("*******");
+    ACYCLIC_PLAT_PUTS_NL("* exit *");
+    ACYCLIC_PLAT_PUTS_NL("********");
+    ACYCLIC_PLAT_PUTS_NL("[exit]  bye");
+    ACYCLIC_PLAT_NEWLINE();
 
     return 0;
 }

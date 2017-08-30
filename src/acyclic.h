@@ -76,7 +76,6 @@ struct ACYCLIC_T;
 /*****************************************************************************/
 /* Forward declarations */
 /*****************************************************************************/
-struct ACYCLIC_T;
 struct ACYCLIC_CMD_DATA_T;
 
 
@@ -126,8 +125,6 @@ typedef struct ACYCLIC_ARG_T {
 
 /**< ACyCLIC instance data */
 typedef struct ACYCLIC_T {
-    ACYCLIC_PLATFORM_T plat;                    /**< platform specific data */
-
     ACYCLIC_CMD_T *cmds;                        /**< root command list */
 
     char *cmdline;                              /**< commandline start */
@@ -167,13 +164,22 @@ extern uint8_t acyclic_flg_exit;                /**< exit flag */
 /*****************************************************************************/
 /* Prototypes */
 /*****************************************************************************/
-void acyclic_main(
-    void
+void acyclic_init(
+    ACYCLIC_T *a                                /**< ACyCLIC handle */
 );
 
+void acyclic_input(
+    ACYCLIC_T *a,                               /**< instance handle */
+    uint8_t key                                 /**< input */
+);
+
+#ifndef ACYCLIC_CNF_CMD_NOT_FOUND
+#  define acyclic_cmd_not_found(x)  1
+#else
 uint8_t acyclic_cmd_not_found(
     ACYCLIC_T *a
 );
+#endif
 
 int acyclic_cmd_add(
     ACYCLIC_T *a,

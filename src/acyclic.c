@@ -25,10 +25,6 @@ static void acyclic_cmd_show(
     uint8_t flg_show_all                        /**< show all flag */
 );
 
-static void acyclic_loop(
-    ACYCLIC_T *a                                /**< instance handle */
-);
-
 static void acyclic_ac(
     ACYCLIC_T *a                                /**< instance handle */
 );
@@ -86,114 +82,52 @@ static void acyclic_history(
     ACYCLIC_T *a                                /**< instance handle */
 );
 
-#ifdef ACYCLIC_CALLOC_INTERNAL
-static void * acyclic_calloc(
-    unsigned int size                           /**< allocation size */
-);
-#endif
-
 
 /*****************************************************************************/
 /* Local variables */
 /*****************************************************************************/
-DBG_VARS
-
-/* exit flag */
 uint8_t acyclic_flg_exit = 0;                   /**< exit flag */
 
-/* global acyclic data structure */
-static ACYCLIC_T glob_a;                        /**< global instance */
-
-#ifdef ACYCLIC_CALLOC_INTERNAL
-/* local memory pool */
-static uint8_t acyclic_mem[ACYCLIC_MEM_POOL];   /**< memory pool */
-static unsigned int acyclic_mem_pos = 0;        /**< memory pool position */
-#endif
-
-
-#ifndef ACYCLIC_CONF_INTEGRATED
-/*****************************************************************************/
-/** Main entrance
- *
- * @retval shell return value
- */
-int main(
-    void
-)
-{
-    acyclic_main();
-
-    return 0;
-}
-
 
 /*****************************************************************************/
-/** Command not-found handler
+/** ACyCLIC init
  *
- * @retval 0 handled
- * @retval other unhandled
+ * The handle pointer must point to a zeroed memory location.
  */
-uint8_t acyclic_cmd_not_found(
-    ACYCLIC_T *a                                /**< instance handle */
-)
-{
-    ACYCLIC_UNUSED(a);
-
-    /* leave command unhandled */
-    return 1;
-}
-#endif /* ACYCLIC_CONF_INTEGRATED */
-
-
-/*****************************************************************************/
-/** ACyCLIC entrance
- *
- * @retval shell return value
- */
-void acyclic_main(
-    void
+void acyclic_init(
+    ACYCLIC_T *a                                /**< ACyCLIC handle */
 )
 {
     /* initialize acyclic data */
-    memset(&glob_a, 0, sizeof(ACYCLIC_T));
-    glob_a.flg_prompt = 1;
+    a->flg_prompt = 1;
 
     /* set initial commandline entry */
-    glob_a.cmdline = glob_a.cmdline_data;
+    a->cmdline = a->cmdline_data;
 
     /* register commands */
-    if (acyclic_cmd_reg(&glob_a)) {
+    if (acyclic_cmd_reg(a)) {
         return;
     }
 
-    DBG_INIT();
-    DBG_PRINTF("\n\nacyclic started\n");
+    /* greeting */
+    ACYCLIC_PLAT_PUTS_NL("acyclic started");
 
-    ACYCLIC_TERM_INIT(&glob_a);
-
-    PUTS_LINE_INF("acyclic started");
-    while (!acyclic_flg_exit) {
-        acyclic_loop(&glob_a);
-    }
-
-    ACYCLIC_TERM_EXIT(&glob_a);
-    DBG_CLOSE();
+    /* show current commandline */
+    acyclic_cmdline(a);
 }
 
 
 /*****************************************************************************/
-/** Main loop
+/** Character input
  */
-static void acyclic_loop(
-    ACYCLIC_T *a                                /**< instance handle */
+void acyclic_input(
+    ACYCLIC_T *a,                               /**< instance handle */
+    uint8_t key                                 /**< input */
 )
 {
-    /* show current commandline */
-    acyclic_cmdline(a);
-
-    /* read character */
-    GETC(a->key);
-    DBG_PRINTF("[getc]   key: 0x%02x, %d", a->key, a->key);
+    /* store character */
+    a->key = key;
+    ACYCLIC_PLAT_DBG_PRINTF("[getc]   key: 0x%02x, %d", a->key, a->key);
 
     /* handle meta sequences */
     if (acyclic_key_pre(a)) {
@@ -206,12 +140,12 @@ static void acyclic_loop(
     /* check control characters */
     switch (a->key) {
 
-        case ACYCLIC_KEY_BS:
+        case ACYCLIC_PLAT_KEY_BS:
             acyclic_bs(a);
             break;
 
         case ACYCLIC_KEY_TAB:
-            DBG_PRINTF("[tab]    a->cmdline_len: %3u", a->cmdline_len);
+            ACYCLIC_PLAT_DBG_PRINTF("[tab]    a->cmdline_len: %3u", a->cmdline_len);
 
             /* reset application arguments */
             a->arg_cnt = 0;
@@ -219,14 +153,17 @@ static void acyclic_loop(
             acyclic_ac(a);
             break;
 
-        case ACYCLIC_KEY_ENTER:
-            DBG_PRINTF("[enter]  a->cmdline_len: %3u | a->cmdline: %.*s", a->cmdline_len, a->cmdline_len, a->cmdline);
+        case ACYCLIC_PLAT_KEY_ENTER:
+            ACYCLIC_PLAT_DBG_PRINTF("[enter]  a->cmdline_len: %3u | a->cmdline: %.*s", a->cmdline_len, a->cmdline_len, a->cmdline);
             acyclic_enter(a);
             break;
 
         default:
             acyclic_key(a);
     }
+
+    /* show current commandline */
+    acyclic_cmdline(a);
 }
 
 
@@ -353,7 +290,7 @@ static void acyclic_ac(
             if (ACYCLIC_SRCH_FOUND != res_srch) {
                 if (0 == a->cnt_tab) {
                     if (acyclic_cmd_not_found(a)) {
-                        PUTS_LINE_INF("command not found");
+                        ACYCLIC_PLAT_PUTS_NL("command not found");
                     }
                     a->flg_prompt = 1;
                     a->flg_cmd_show = 1;
@@ -393,7 +330,7 @@ static void acyclic_ac(
 
         /* argument was found, update command list for following parameters */
         if (cmds_found) {
-            DBG_PRINTF("[ac]     changing to sub command list");
+            ACYCLIC_PLAT_DBG_PRINTF("[ac]     changing to sub command list");
             cmd = cmds_found->sub;
         }
     }
@@ -412,9 +349,9 @@ static void acyclic_bs(
 {
     if (a->cmdline_len) {
         a->cmdline_len--;
-        ACYCLIC_MACRO_BACKSPACE();
+        ACYCLIC_PLAT_BACKSPACE();
     }
-    DBG_PRINTF("[back]   a->cmdline_len: %3u | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len, a->cmdline);
+    ACYCLIC_PLAT_DBG_PRINTF("[back]   a->cmdline_len: %3u | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len, a->cmdline);
 }
 
 
@@ -432,15 +369,15 @@ static void acyclic_cmd_show(
     }
 
     if (cmd) {
-        ACYCLIC_MACRO_NEWLINE();
+        ACYCLIC_PLAT_NEWLINE();
 
         for (; cmd; cmd = (flg_show_all) ? cmd->next : cmd->next_ac) {
-            PUTS_INF(cmd->name);
-            ACYCLIC_MACRO_SPACE();
+            ACYCLIC_PLAT_PUTS(cmd->name);
+            ACYCLIC_PLAT_SPACE();
         }
     }
 
-    ACYCLIC_MACRO_NEWLINE();
+    ACYCLIC_PLAT_NEWLINE();
     a->flg_prompt = 1;
     a->flg_cmd_show = 1;
 }
@@ -460,9 +397,9 @@ static void acyclic_space_skip(
 {
     /* eat preceding spaces */
     for (; *len && (' ' == **str); (*str)++, (*len)--) {
-        DBG_PRINTF("[ac]     len: %u | pre-space skipped: '%.*s'", *len, *len, *str);
+        ACYCLIC_PLAT_DBG_PRINTF("[ac]     len: %u | pre-space skipped: '%.*s'", *len, *len, *str);
     }
-    DBG_PRINTF("[ac]     len: %u | pre-space check finished: '%.*s'", *len, *len, *str);
+    ACYCLIC_PLAT_DBG_PRINTF("[ac]     len: %u | pre-space check finished: '%.*s'", *len, *len, *str);
 }
 
 
@@ -489,7 +426,7 @@ static uint8_t acyclic_substr(
 
     *len -= *sub_len;
 
-    DBG_PRINTF("[substr] str: '%.*s', len: %d", *sub_len, sub, *sub_len);
+    ACYCLIC_PLAT_DBG_PRINTF("[substr] str: '%.*s', len: %d", *sub_len, sub, *sub_len);
     return res;
 }
 
@@ -523,8 +460,8 @@ static void acyclic_char_add(
 {
     if (a->cmdline_len < ACYCLIC_CMDLINE_LEN) {
         a->cmdline[a->cmdline_len++] = chr;
-        PUTC(chr);
-        DBG_PRINTF("[add]    a->cmdline_len: %3u | a->cmdline[%u]: %c | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len - 1, a->key, a->cmdline_len, a->cmdline);
+        ACYCLIC_PLAT_PUTC(chr);
+        ACYCLIC_PLAT_DBG_PRINTF("[add]    a->cmdline_len: %3u | a->cmdline[%u]: %c | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len - 1, a->key, a->cmdline_len, a->cmdline);
     }
 }
 
@@ -540,7 +477,7 @@ static void acyclic_key(
         acyclic_char_add(a, (char) a->key);
     }
     else {
-        DBG_PRINTF("[undef]  a->key: %u", a->key);
+        ACYCLIC_PLAT_DBG_PRINTF("[undef]  a->key: %u", a->key);
     }
 }
 
@@ -557,7 +494,7 @@ static void acyclic_enter(
     uint8_t pos_arg;                            /* argument string position */
 #endif
 
-    ACYCLIC_MACRO_NEWLINE();
+    ACYCLIC_PLAT_NEWLINE();
 
     /* store commandline in history */
     acyclic_history(a);
@@ -571,22 +508,22 @@ static void acyclic_enter(
         return;
     }
     a->flg_prompt = 1;
-    DBG_PRINTF("[enter]  a->cmdline_len: %3u", a->cmdline_len);
+    ACYCLIC_PLAT_DBG_PRINTF("[enter]  a->cmdline_len: %3u", a->cmdline_len);
 
 #if ACYCLIC_DBG_ARGS_SHOW == 1
     if (a->arg_cnt) {
-        PUTS_INF("args: ");
+        ACYCLIC_PLAT_PUTS("args: ");
         for (cnt_arg = 0; cnt_arg < a->arg_cnt; cnt_arg++) {
-            PUTS_INF("[");
+            ACYCLIC_PLAT_PUTC('[');
             if (a->args[cnt_arg].cmd) {
-                PUTC('*');
+                ACYCLIC_PLAT_PUTC('*');
             }
             for (pos_arg = 0; pos_arg < a->args[cnt_arg].len; pos_arg++) {
-                PUTC(a->args[cnt_arg].name[pos_arg]);
+                ACYCLIC_PLAT_PUTC(a->args[cnt_arg].name[pos_arg]);
             }
-            PUTS_INF("] ");
+            ACYCLIC_PLAT_PUTS("] ");
         }
-        ACYCLIC_MACRO_NEWLINE();
+        ACYCLIC_PLAT_NEWLINE();
     }
 #endif /* ACYCLIC_DBG_ARGS_SHOW == 1 */
 
@@ -595,7 +532,7 @@ static void acyclic_enter(
 
         /* warn if no function was registered */
         if (!((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func) {
-            PUTS_LINE_INF("no function assigned");
+            ACYCLIC_PLAT_PUTS("no function assigned");
         } else {
             /* execute function */
             a->res_func = ((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func(a);
@@ -618,13 +555,13 @@ static void acyclic_cmdline(
 
     /* show prompt */
     if (a->flg_prompt) {
-        PUTS_INF(ACYCLIC_PROMPT);
+        ACYCLIC_PLAT_PUTS(ACYCLIC_PROMPT);
         a->flg_prompt = 0;
     }
 
     if (a->flg_cmd_show) {
         for (cnt = 0; cnt < a->cmdline_len; cnt++) {
-            PUTC(a->cmdline[cnt]);
+            ACYCLIC_PLAT_PUTC(a->cmdline[cnt]);
         }
         a->flg_cmd_show = 0;
     }
@@ -763,37 +700,6 @@ static void acyclic_history(
 }
 
 
-#ifdef ACYCLIC_CALLOC_INTERNAL
-/*****************************************************************************/
-/** Local mem allocator
- *
- * @retval ptr successful
- * @retval null failed
- */
-static void * acyclic_calloc(
-    unsigned int size                           /**< allocation size */
-)
-{
-    uint8_t *ptr;
-    uint8_t *ptr_end;
-
-    if ((ACYCLIC_MEM_POOL - acyclic_mem_pos) < size) {
-        return NULL;
-    }
-
-    ptr = &acyclic_mem[acyclic_mem_pos];
-    acyclic_mem_pos += size;
-    ptr_end = &acyclic_mem[acyclic_mem_pos];
-
-    for (; ptr_end >= ptr; ptr_end--) {
-        *ptr_end = 0;
-    }
-
-    return ptr;
-}
-#endif
-
-
 /*****************************************************************************/
 /** Add command to command list
  */
@@ -815,7 +721,7 @@ int acyclic_cmd_add(
     for (cmd = cmd_root; *cmd; cmd = &(*cmd)->next);
 
     /* allocate element for new command */
-    *cmd = ACYCLIC_CALLOC((flg_origin) ? sizeof(ACYCLIC_CMD_ROOT_T) : sizeof(ACYCLIC_CMD_T));
+    *cmd = ACYCLIC_PLAT_CALLOC((flg_origin) ? sizeof(ACYCLIC_CMD_ROOT_T) : sizeof(ACYCLIC_CMD_T));
     if (!*cmd) {
         return -1;
     }

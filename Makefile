@@ -26,16 +26,18 @@ linux:
 
 atmega8:
 	$(CC) -Isrc -Iports/atmega8 -Os -Wall -Wextra -Werror -mmcu=atmega8 -DF_CPU=3686400 -ffunction-sections -fdata-sections -c -o acyclic.o src/acyclic.c
+	$(CC) -Isrc -Iports/atmega8 -Os -Wall -Wextra -Werror -mmcu=atmega8 -DF_CPU=3686400 -ffunction-sections -fdata-sections -c -o acyclic_platform.o ports/atmega8/acyclic_platform.c
 	$(CC) -Isrc -Iports/atmega8 -Os -Wall -Wextra -Werror -mmcu=atmega8 -DF_CPU=3686400 -ffunction-sections -fdata-sections -c -o acyclic_cmds.o tests/acyclic_cmds.c
-	$(CC) -Wall -Wextra -Werror -mmcu=atmega8 -DF_CPU=3686400 -Os -Wl,-Map,acyclic_atmega.map -Wl,--gc-sections -o acyclic.elf acyclic.o acyclic_cmds.o
+	$(CC) -Wall -Wextra -Werror -mmcu=atmega8 -DF_CPU=3686400 -Os -Wl,-Map,acyclic_atmega.map -Wl,--gc-sections -o acyclic.elf acyclic.o acyclic_cmds.o acyclic_platform.o
 	$(OC) -O ihex -R .eeprom acyclic.elf acyclic.hex
 	$(OS) acyclic.elf
 
 
 atmega328p:
 	$(CC) $(CFLAGS) -Isrc -Iports/atmega328p -Os -DF_CPU=16000000UL -mmcu=atmega328p -ffunction-sections -fdata-sections -I. -c -o acyclic.o src/acyclic.c
+	$(CC) $(CFLAGS) -Isrc -Iports/atmega328p -Os -DF_CPU=16000000UL -mmcu=atmega328p -ffunction-sections -fdata-sections -I. -c -o acyclic_platform.o ports/atmega328p/acyclic_platform.c
 	$(CC) $(CFLAGS) -Isrc -Iports/atmega328p -Os -DF_CPU=16000000UL -mmcu=atmega328p -ffunction-sections -fdata-sections -I. -c -o acyclic_cmds.o tests/acyclic_cmds.c
-	$(CC) $(CFLAGS) -DF_CPU=16000000UL -mmcu=atmega328p -Os -Wl,-Map,acyclic_atmega328p.map -Wl,--gc-sections -o acyclic.elf acyclic.o acyclic_cmds.o
+	$(CC) $(CFLAGS) -DF_CPU=16000000UL -mmcu=atmega328p -Os -Wl,-Map,acyclic_atmega328p.map -Wl,--gc-sections -o acyclic.elf acyclic.o acyclic_cmds.o acyclic_platform.o
 	$(OC) -O ihex -R .eeprom acyclic.elf acyclic.hex
 	$(OS) acyclic.elf
 

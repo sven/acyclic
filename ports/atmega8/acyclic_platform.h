@@ -17,56 +17,41 @@
 /*****************************************************************************/
 /* Platform defines */
 /*****************************************************************************/
-typedef struct {
-} ACYCLIC_PLATFORM_T;
+#define ACYCLIC_PLAT_MEMPOOL            256
 
 #include <avr/io.h>
 #ifndef NULL
 #  define NULL 0
 #endif
 
-#define ACYCLIC_CALLOC(x)         acyclic_calloc(x)
-#define ACYCLIC_CALLOC_INTERNAL   1
-#define ACYCLIC_MEM_POOL          256
+#define ACYCLIC_PLAT_CALLOC(x)          acyclic_plat_calloc(x)
+#define ACYCLIC_PLAT_PUTC(x)            acyclic_plat_putc(x)
+#define ACYCLIC_PLAT_PUTS(x)            acyclic_plat_puts(x)
+#define ACYCLIC_PLAT_PRINTF(...)
+#define ACYCLIC_PLAT_DBG_PRINTF(...)
+#define ACYCLIC_PLAT_BACKSPACE()        ACYCLIC_PLAT_PUTC('\b'); ACYCLIC_PLAT_PUTC(' '); ACYCLIC_PLAT_PUTC('\b')
+#define ACYCLIC_PLAT_NEWLINE()          ACYCLIC_PLAT_PUTC('\r'); ACYCLIC_PLAT_PUTC('\n')
+#define ACYCLIC_PLAT_SPACE()            ACYCLIC_PLAT_PUTC(' ')
+#define ACYCLIC_PLAT_PUTS_NL(x)         ACYCLIC_PLAT_PUTS(x); ACYCLIC_PLAT_NEWLINE()
 
-#define ACYCLIC_KEY_ENTER 13
-#define ACYCLIC_KEY_BS    8
-#define GETC(key) while (!(UCSRA & (1 << RXC))); key = UDR
-#define PUTC(x) while (!(UCSRA & (1 << UDRE))); UDR = x
-#define ACYCLIC_MACRO_NEWLINE() PUTC('\r'); PUTC('\n')
-#define PUTS_INF(x)       { \
-                                const char *s = x;                                  \
-                                while (*s) {                                        \
-                                    PUTC(*s);                                       \
-                                    s++;                                            \
-                                }                                                   \
-                            }
-#define PRINTF(...)
-#define ACYCLIC_MACRO_BACKSPACE() PUTC('\b'); PUTC(' '); PUTC('\b')
-#define DBG_VARS
-#define DBG_INIT()
-#define DBG_PRINTF(...)
-#define DBG_CLOSE()
-#define PUTS_LINE_INF(x)  { \
-                                char *s = x;                                        \
-                                while (*s) {                                        \
-                                    PUTC(*s);                                       \
-                                    s++;                                            \
-                                }                                                   \
-                                PUTC('\r');                                         \
-                                PUTC('\n');                                         \
-                            }
+#define ACYCLIC_PLAT_KEY_ENTER          13
+#define ACYCLIC_PLAT_KEY_BS             8
 
-#define BAUD 9600
-#define UBRR_VAL ((F_CPU / (16UL * BAUD)) - 1)
-#define ACYCLIC_TERM_INIT(x) { \
-                                UBRRH = (unsigned char) (UBRR_VAL >> 8);            \
-                                UBRRL = (unsigned char) (UBRR_VAL & 0xff);          \
-                                UCSRB = (1 << RXEN | 1 << TXEN);                    \
-                                UCSRC = (1 << URSEL) | (1 << UCSZ1) | (1 << UCSZ0); \
-                            }
-#define ACYCLIC_TERM_EXIT(x)
-#define ACYCLIC_MACRO_SPACE() PUTC(' ')
+
+/*****************************************************************************/
+/* Prototypes */
+/*****************************************************************************/
+void * acyclic_plat_calloc(
+    unsigned int size                           /**< allocation size */
+);
+
+void acyclic_plat_putc(
+    char c
+);
+
+void acyclic_plat_puts(
+    const char *s
+);
 
 
 #endif /* ACYCLIC_PLATFORM_H */

@@ -12,58 +12,35 @@
 #define ACYCLIC_PLATFORM_H
 
 #include <string.h>
-
-
-/*****************************************************************************/
-/* Platform defines */
-/*****************************************************************************/
 #include <stdlib.h>
 #include <stdio.h>
 #include <termios.h>
 #include <unistd.h>
 #include <inttypes.h>
 
-typedef struct {
-    struct termios term;                        /**< terminal settings */
-} ACYCLIC_PLATFORM_T;
 
-int acyclic_term_init(
-    struct ACYCLIC_T *a
-);
+/*****************************************************************************/
+/* Platform defines */
+/*****************************************************************************/
 
-int acyclic_term_exit(
-    struct ACYCLIC_T *a
-);
+#define ACYCLIC_PLAT_CALLOC(x)          calloc(1, x)
+#define ACYCLIC_PLAT_PUTC(x)            putchar(x)
+#define ACYCLIC_PLAT_PUTS(x)            fputs(x, stdout)
+#define ACYCLIC_PLAT_PRINTF(...)        printf(__VA_ARGS__)
+#define ACYCLIC_PLAT_NEWLINE()          ACYCLIC_PLAT_PUTC('\n')
+#define ACYCLIC_PLAT_SPACE()            ACYCLIC_PLAT_PUTC(' ')
+#define ACYCLIC_PLAT_BACKSPACE()        ACYCLIC_PLAT_PUTS("\b \b")
+#define ACYCLIC_PLAT_PUTS_NL(x)         ACYCLIC_PLAT_PUTS(x); ACYCLIC_PLAT_NEWLINE()
 
-#define ACYCLIC_CALLOC(x)         calloc(1, x)
-#define ACYCLIC_MEM_POOL          512
-
-#define ACYCLIC_KEY_ENTER 10
-#define ACYCLIC_KEY_BS    127
-#define GETC(key) key = (uint8_t) getchar()
-#define PUTC(x) putc(x, stdout)
-#define ACYCLIC_MACRO_NEWLINE() PUTC('\n')
-#define PUTS_INF(x) printf("%s", x)
-#define PUTS_LINE_INF(x) printf("%s\n", x)
-#define PRINTF printf
-#define ACYCLIC_MACRO_SPACE() putc(' ', stdout)
-#define ACYCLIC_MACRO_BACKSPACE() fputs("\b \b", stdout)
+#define ACYCLIC_PLAT_KEY_ENTER          10
+#define ACYCLIC_PLAT_KEY_BS             127
 
 #if ACYCLIC_DBG > 0
-#  define DBG_VARS FILE *fd;
-#  define DBG_INIT() fd = fopen("acyclic.dbg", "a"); if (!fd) { exit(1); }
-#  define DBG_PRINTF(...) fprintf(fd, __VA_ARGS__); fprintf(fd, "\n"); fflush(fd)
-#  define DBG_CLOSE() fclose(fd)
-extern FILE *fd;
+extern FILE *acyclic_plat_dbg_fd;       /**< debug file desc */
+#  define ACYCLIC_PLAT_DBG_PRINTF(...)  fprintf(acyclic_plat_dbg_fd, __VA_ARGS__); fprintf(acyclic_plat_dbg_fd, "\n"); fflush(acyclic_plat_dbg_fd)
 #else
-#  define DBG_VARS
-#  define DBG_INIT()
-#  define DBG_PRINTF(...)
-#  define DBG_CLOSE()
+#  define ACYCLIC_PLAT_DBG_PRINTF(...)
 #endif
-
-#define ACYCLIC_TERM_INIT(x) acyclic_term_init(x)
-#define ACYCLIC_TERM_EXIT(x) acyclic_term_exit(x)
 
 
 #endif /* ACYCLIC_PLATFORM_H */
