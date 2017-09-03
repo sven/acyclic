@@ -47,6 +47,7 @@ expect "$ "
 send "same\t\t"
 expect "same sametext"
 send "\r"
+expect "no function assigned"
 
 expect "$ "
 send "test o\r"

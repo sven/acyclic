@@ -63,6 +63,7 @@ static uint8_t acyclic_cmp(
 );
 
 static uint8_t acyclic_srch(
+    uint8_t flg_ac,                             /**< ac flag */
     char *sub,                                  /**< substring */
     unsigned int len_sub,                       /**< substring length */
     ACYCLIC_CMD_T *cmds,                        /**< command list */
@@ -177,6 +178,7 @@ void acyclic_input(
  * @retval ACYCLIC_SRCH_NONE
  */
 static uint8_t acyclic_srch(
+    uint8_t flg_ac,                             /**< ac flag */
     char *sub,                                  /**< substring */
     unsigned int len_sub,                       /**< substring length */
     ACYCLIC_CMD_T *cmds,                        /**< command list */
@@ -215,11 +217,9 @@ static uint8_t acyclic_srch(
                 cmd->next_ac = NULL;
                 break;
         }
-    }
 
-    /* check if a single full match was found */
-    if (flg_match_full) {
-        if (!(*cmds_found)->next_ac) {
+        /* check if a single full match was found */
+        if ((flg_match_full) && (!flg_ac)) {
             return ACYCLIC_SRCH_FOUND;
         }
     }
@@ -257,7 +257,7 @@ static void acyclic_ac(
         res_sub = acyclic_substr(arg, &arg_len, &cmdline_len);
 
         /* find substring in commands */
-        res_srch = acyclic_srch(arg, arg_len, cmd, &cmds_found);
+        res_srch = acyclic_srch(a->cnt_tab && (ACYCLIC_SUBSTR_OPEN == res_sub), arg, arg_len, cmd, &cmds_found);
 
         /* tab */
         if (a->cnt_tab && (ACYCLIC_SUBSTR_OPEN == res_sub)) {
