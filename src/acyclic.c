@@ -534,7 +534,7 @@ static void acyclic_enter(
 
         /* warn if no function was registered */
         if (!((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func) {
-            ACYCLIC_PLAT_PUTS("no function assigned");
+            ACYCLIC_PLAT_PUTS_NL("no function assigned");
         } else {
             /* execute function */
             a->res_func = ((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func(a);
