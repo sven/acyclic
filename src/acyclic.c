@@ -315,16 +315,15 @@ static void acyclic_ac(
         a->arg_cnt++;
 
         /* check if next argument can be stored */
-        if (ACYCLIC_ARG_COUNT <= a->arg_cnt) {
+        if (ACYCLIC_ARG_COUNT < a->arg_cnt) {
 
-            /* enhance last found argument to complete rest of the input string */
-            if (cmdline_len) {
-                a->args[a->arg_cnt - 1].len += cmdline_len;
-                a->args[a->arg_cnt - 1].cmd = NULL;
+            ACYCLIC_PLAT_PUTS_NL("max arg count reached");
+            a->args[0].cmd = NULL;
+            a->flg_prompt = 1;
+            a->flg_cmd_show = 1;
 
-                /* end parsing */
-                return;
-            }
+            /* end parsing */
+            return;
         }
 
         /* next argument */

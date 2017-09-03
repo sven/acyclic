@@ -54,5 +54,12 @@ send "test o\r"
 expect "args: \\\[*test\\\] \\\[o\\\]"
 
 expect "$ "
+send "help 1 2 3 4\r"
+expect "show greeting"
+expect "$ "
+send "help 1 2 3 4 5\r"
+expect "max arg count reached"
+
+expect "$ "
 
 exit 0
