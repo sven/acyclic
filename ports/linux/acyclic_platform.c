@@ -9,11 +9,13 @@
  * Licensed under the MIT license, see LICENSE for details.
  */
 #include <acyclic.h>
+#include <errno.h>
 
 
 /*****************************************************************************/
 /* Global variables */
 /*****************************************************************************/
+ACYCLIC_T *g_a;                                 /**< ACyCLIC handle ptr */
 #if ACYCLIC_DBG > 0
 FILE *acyclic_plat_dbg_fd;                      /**< debug file desc */
 #endif
@@ -22,7 +24,6 @@ FILE *acyclic_plat_dbg_fd;                      /**< debug file desc */
 /*****************************************************************************/
 /* Local variables */
 /*****************************************************************************/
-static ACYCLIC_T g_a;                           /**< ACyCLIC handle */
 static struct termios g_term;                   /**< terminal settings */
 
 
@@ -43,32 +44,82 @@ static int plat_term_exit(
  *
  * @returns SHELL result
  */
-int main(
+__attribute__((weak)) int main(
     void
 )
 {
+    int res;                                    /* result */
+
+    /* initialize platform */
+    res = acyclic_plat_init();
+    if (res) {
+        return res;
+    }
+
+    /* handle input */
+    while (!acyclic_flg_exit) {
+        acyclic_input(g_a, (uint8_t) getchar());
+    }
+
+    /* shutdown platform */
+    return acyclic_plat_exit();
+}
+
+
+/*****************************************************************************/
+/** Initialize platform
+ *
+ * @returns SHELL result
+ */
+int acyclic_plat_init(
+    void
+)
+{
+    int res;                                    /* result */
+
     /* initialize terminal */
-    plat_term_init(&g_term);
+    res = plat_term_init(&g_term);
+    if (res) {
+        return res;
+    }
 
 #if ACYCLIC_DBG > 0
     /* initialize debugging */
     acyclic_plat_dbg_fd = fopen("acyclic.dbg", "a");
     if (!acyclic_plat_dbg_fd) {
-        exit(1);
+        fprintf(stderr, "Couldn't open debug file: %i (%s)\n", errno, strerror(errno));
+        return 1;
     }
 
     ACYCLIC_PLAT_DBG_PRINTF("\n\nacyclic started\n");
 #endif
 
     /* initialize ACyCLIC */
-    memset(&g_a, 0, sizeof(ACYCLIC_T));
-    acyclic_init(&g_a);
-
-    /* handle input */
-    while (!acyclic_flg_exit) {
-        acyclic_input(&g_a, (uint8_t) getchar());
+    g_a = calloc(1, sizeof(ACYCLIC_T));
+    if (!g_a) {
+        fprintf(stderr, "Failed to allocate ACyCLIC data\n");
+        return 1;
     }
 
+    res = acyclic_init(g_a);
+    if (res) {
+        fprintf(stderr, "Failed to initialize ACyCLIC\n");
+        acyclic_plat_exit();
+    }
+
+    return res;
+}
+
+
+/*****************************************************************************/
+/** Shutdown platform
+ *
+ * @returns SHELL result
+ */
+int acyclic_plat_exit(
+    void
+)
+{
 #if ACYCLIC_DBG > 0
     /* close debugging */
     fclose(acyclic_plat_dbg_fd);
@@ -76,6 +127,8 @@ int main(
 
     /* close terminal */
     plat_term_exit(&g_term);
+
+    return 0;
 }
 
 
@@ -86,14 +139,14 @@ static int plat_term_init(
     struct termios *term                        /**< terminal data */
 )
 {
-    int res;
-    struct termios term_tmp;
+    int res;                                    /* result */
+    struct termios term_tmp;                    /* temporary termios data */
 
     /* store current terminal settings */
     res = tcgetattr(STDIN_FILENO, term);
     if (res) {
-        fprintf(stderr, "Couldn't read termios attributes: %i (%s)\n", res, strerror(res));
-        return res;
+        fprintf(stderr, "Couldn't read termios attributes: %i (%s)\n", errno, strerror(errno));
+        return 1;
     }
 
     /* copy current settings to allow modification */
@@ -108,10 +161,11 @@ static int plat_term_init(
     /* set attributes */
     res = tcsetattr(STDIN_FILENO, TCSANOW, &term_tmp);
     if (res) {
-        fprintf(stderr, "Couldn't set termios attributes: %i (%s)\n", res, strerror(res));
+        fprintf(stderr, "Couldn't set termios attributes: %i (%s)\n", errno, strerror(errno));
+        return 1;
     }
 
-    return res;
+    return 0;
 }
 
 
@@ -127,8 +181,9 @@ static int plat_term_exit(
     /* restore previous terminal settings */
     res = tcsetattr(STDIN_FILENO, TCSANOW, term);
     if (res) {
-        fprintf(stderr, "Couldn't set termios attributes: %i (%s)\n", res, strerror(res));
+        fprintf(stderr, "Couldn't set termios attributes: %i (%s)\n", errno, strerror(errno));
+        return 1;
     }
 
-    return res;
+    return 0;
 }

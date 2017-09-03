@@ -20,9 +20,8 @@
 
 
 /*****************************************************************************/
-/* Platform defines */
+/* Defines */
 /*****************************************************************************/
-
 #define ACYCLIC_PLAT_CALLOC(x)          calloc(1, x)
 #define ACYCLIC_PLAT_PUTC(x)            putchar(x)
 #define ACYCLIC_PLAT_PUTS(x)            fputs(x, stdout)
@@ -41,6 +40,24 @@ extern FILE *acyclic_plat_dbg_fd;       /**< debug file desc */
 #else
 #  define ACYCLIC_PLAT_DBG_PRINTF(...)
 #endif
+
+
+/*****************************************************************************/
+/* Global variables */
+/*****************************************************************************/
+extern struct ACYCLIC_T *g_a;                   /**< ACyCLIC handle ptr */
+
+
+/*****************************************************************************/
+/* Prototypes */
+/*****************************************************************************/
+int acyclic_plat_init(
+    void
+);
+
+int acyclic_plat_exit(
+    void
+);
 
 
 #endif /* ACYCLIC_PLATFORM_H */
