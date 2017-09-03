@@ -164,7 +164,7 @@ extern uint8_t acyclic_flg_exit;                /**< exit flag */
 /*****************************************************************************/
 /* Prototypes */
 /*****************************************************************************/
-void acyclic_init(
+int acyclic_init(
     ACYCLIC_T *a                                /**< ACyCLIC handle */
 );
 

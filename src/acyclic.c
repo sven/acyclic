@@ -94,7 +94,7 @@ uint8_t acyclic_flg_exit = 0;                   /**< exit flag */
  *
  * The handle pointer must point to a zeroed memory location.
  */
-void acyclic_init(
+int acyclic_init(
     ACYCLIC_T *a                                /**< ACyCLIC handle */
 )
 {
@@ -106,7 +106,7 @@ void acyclic_init(
 
     /* register commands */
     if (acyclic_cmd_reg(a)) {
-        return;
+        return 1;
     }
 
     /* greeting */
@@ -114,6 +114,8 @@ void acyclic_init(
 
     /* show current commandline */
     acyclic_cmdline(a);
+
+    return 0;
 }
 
 
