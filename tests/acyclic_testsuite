@@ -61,5 +61,11 @@ send "help 1 2 3 4 5\r"
 expect "max arg count reached"
 
 expect "$ "
+send "greet --fmt=\"%s %s\" \"Foo\" \"Bar\"\r"
+expect "arg: greet"
+expect "arg: --fmt=\"%s %s\""
+expect "arg: \"Foo\""
+expect "arg: \"Bar\""
 
+expect "$ "
 exit 0
