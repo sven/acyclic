@@ -34,6 +34,7 @@ static void acyclic_bs(
 );
 
 static uint8_t acyclic_substr(
+    ACYCLIC_T *a,                               /**< instance handle */
     char *sub,                                  /**< substring */
     unsigned int *sub_len,                      /**< substring length */
     unsigned int *len                           /**< overall length */
@@ -254,7 +255,7 @@ static void acyclic_ac(
         }
 
         /* find and skip substring */
-        res_sub = acyclic_substr(arg, &arg_len, &cmdline_len);
+        res_sub = acyclic_substr(a, arg, &arg_len, &cmdline_len);
 
         /* find substring in commands */
         res_srch = acyclic_srch(a->cnt_tab && (ACYCLIC_SUBSTR_OPEN == res_sub), arg, arg_len, cmd, &cmds_found);
@@ -411,6 +412,7 @@ static void acyclic_space_skip(
  * @retval ACYCLIC_SUBSTR_CLOSED
  */
 static uint8_t acyclic_substr(
+    ACYCLIC_T *a,                               /**< instance handle */
     char *sub,                                  /**< substring */
     unsigned int *sub_len,                      /**< substring length */
     unsigned int *len                           /**< overall length */
@@ -419,9 +421,15 @@ static uint8_t acyclic_substr(
     uint8_t res = ACYCLIC_SUBSTR_OPEN;
 
     for (*sub_len = 0; *sub_len < *len; (*sub_len)++) {
+        if (sub[*sub_len] == '"') {
+            a->flg_string = !a->flg_string;
+        }
+
         if (sub[*sub_len] == ' ') {
-            res = ACYCLIC_SUBSTR_CLOSED;
-            break;
+            if (!a->flg_string) {
+                res = ACYCLIC_SUBSTR_CLOSED;
+                break;
+            }
         }
     }
 
@@ -511,6 +519,16 @@ static void acyclic_enter(
     a->flg_prompt = 1;
     ACYCLIC_PLAT_DBG_PRINTF("[enter]  a->cmdline_len: %3u", a->cmdline_len);
 
+    /* clear commandline */
+    a->cmdline_len = 0;
+
+    /* check if strings are closed */
+    if (a->flg_string) {
+        a->flg_string = 0;
+        ACYCLIC_PLAT_PUTS_NL("incomplete string found");
+        return;
+    }
+
 #if ACYCLIC_DBG_ARGS_SHOW == 1
     if (a->arg_cnt) {
         ACYCLIC_PLAT_PUTS("args: ");
@@ -539,9 +557,6 @@ static void acyclic_enter(
             a->res_func = ((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func(a);
         }
     }
-
-    /* clear commandline */
-    a->cmdline_len = 0;
 }
 
 

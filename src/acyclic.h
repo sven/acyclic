@@ -143,6 +143,7 @@ typedef struct ACYCLIC_T {
 
     uint8_t key;
     uint8_t cnt_tab;
+    uint8_t flg_string;                         /**< in-string flag */
     uint8_t flg_prompt;                         /**< show prompt */
     uint8_t flg_cmd_show;                       /**< show commandline */
     uint8_t flg_match_exact;
