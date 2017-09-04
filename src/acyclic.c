@@ -248,6 +248,18 @@ static void acyclic_ac(
     /* stop at string end */
     while (cmdline_len) {
 
+        /* check if argument can be stored */
+        if (ACYCLIC_ARG_COUNT <= a->arg_cnt) {
+            if (0 == a->cnt_tab) {
+                ACYCLIC_PLAT_PUTS_NL("max arg count reached");
+                a->args[0].cmd = NULL;
+                a->flg_cmd_show = 1;
+            }
+
+            /* end parsing */
+            return;
+        }
+
         /* remove leading spaces */
         acyclic_space_skip(&arg, &cmdline_len);
         if (!cmdline_len) {
@@ -314,18 +326,6 @@ static void acyclic_ac(
         }
         a->args[a->arg_cnt].len = arg_len;
         a->arg_cnt++;
-
-        /* check if next argument can be stored */
-        if (ACYCLIC_ARG_COUNT < a->arg_cnt) {
-
-            ACYCLIC_PLAT_PUTS_NL("max arg count reached");
-            a->args[0].cmd = NULL;
-            a->flg_prompt = 1;
-            a->flg_cmd_show = 1;
-
-            /* end parsing */
-            return;
-        }
 
         /* next argument */
         arg += arg_len;
