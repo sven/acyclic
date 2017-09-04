@@ -307,7 +307,6 @@ static void acyclic_ac(
                     if (acyclic_cmd_not_found(a)) {
                         ACYCLIC_PLAT_PUTS_NL("command not found");
                     }
-                    a->flg_prompt = 1;
                     a->flg_cmd_show = 1;
                 }
 
