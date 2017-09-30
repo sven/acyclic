@@ -172,9 +172,7 @@ uint8_t acyclic_cmd_not_found(
 int acyclic_cmd_add(
     ACYCLIC_T *a,
     ACYCLIC_CMD_T **cmd_root,                   /**< root */
-    const char * const cmd_name,                /**< name */
-    ACYCLIC_CMD_FUNC_T cmd_func,                /**< function */
-    ACYCLIC_CMD_T **cmd_new                     /**< new command */
+    ACYCLIC_CMD_T *cmd_new                      /**< new command */
 );
 
 int acyclic_cmd_reg(

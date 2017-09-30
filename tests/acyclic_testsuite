@@ -15,14 +15,14 @@ send "\r"
 
 expect "$ "
 send "\t\t"
-expect "help test greet rocky rockie same sametext exit"
+expect "exit greet help rockie rocky same sametext test"
 send "\r"
 
 expect "$ "
 send "r\t"
 expect ""
 send "\t"
-expect "rocky rockie"
+expect "rockie rocky"
 send "\r"
 expect "command not found"
 

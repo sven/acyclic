@@ -21,23 +21,49 @@ uint8_t cmd_test_func(struct ACYCLIC_T *a);
 
 
 /*****************************************************************************/
-/* Local variables */
+/* Macros */
 /*****************************************************************************/
-#define CMD_HELP        "help"
-#define CMD_ROCKY       "rocky"
-#define CMD_ROCKIE      "rockie"
-#define CMD_GREET       "greet"
-#define CMD_SPEEX       "speex"
-#define CMD_SMAXX       "smaxx"
-#define CMD_SNUFZ       "snufz"
-#define CMD_SAME        "same"
-#define CMD_SAMETEXT    "sametext"
-#define CMD_EXIT        "exit"
-#define CMD_ME          "me"
-#define CMD_TEST        "test"
-#define CMD_TEST_ONE    "one"
+
+/* id, name, next, sub, func */
+#define ACYCLIC_CMD(cmd_name, cmd_desc, cmd_next, cmd_sub, cmd_func) \
+    static const char cmd_name_ ## cmd_name[] = cmd_desc; \
+    static ACYCLIC_CMD_T cmd_ ## cmd_name = { \
+        cmd_name_ ## cmd_name, \
+        (sizeof(cmd_desc) / sizeof(cmd_desc[0])) - 1, \
+        cmd_next, \
+        cmd_sub, \
+        NULL, \
+        cmd_func, \
+    }
 
 
+/*****************************************************************************/
+/* Commands */
+/*****************************************************************************/
+ACYCLIC_CMD(test_one, "one", NULL, NULL, NULL);
+ACYCLIC_CMD(test, "test", NULL, &cmd_test_one, cmd_test_func);
+
+ACYCLIC_CMD(sametext, "sametext", &cmd_test, NULL, NULL);
+ACYCLIC_CMD(same, "same", &cmd_sametext, NULL, NULL);
+
+ACYCLIC_CMD(rocky, "rocky", &cmd_same, NULL, NULL);
+ACYCLIC_CMD(rockie, "rockie", &cmd_rocky, NULL, NULL);
+
+ACYCLIC_CMD(help_speex, "speex", NULL, NULL, NULL);
+ACYCLIC_CMD(help_smaxx, "smaxx", &cmd_help_speex, NULL, NULL);
+ACYCLIC_CMD(help_snufz, "snufz", &cmd_help_smaxx, NULL, NULL);
+ACYCLIC_CMD(help_greet, "greet", &cmd_help_snufz, NULL, NULL);
+ACYCLIC_CMD(help, "help", &cmd_rockie, &cmd_help_greet, cmd_help_func);
+
+ACYCLIC_CMD(greet_me, "me", NULL, NULL, NULL);
+ACYCLIC_CMD(greet, "greet", &cmd_help, &cmd_greet_me, cmd_greet_func);
+
+ACYCLIC_CMD(exit, "exit", &cmd_greet, NULL, cmd_exit_func);
+
+
+/*****************************************************************************/
+/** Help
+ */
 uint8_t cmd_help_func(
     struct ACYCLIC_T *a
 )
@@ -55,6 +81,9 @@ uint8_t cmd_help_func(
 }
 
 
+/*****************************************************************************/
+/** Test
+ */
 uint8_t cmd_test_func(
     struct ACYCLIC_T *a
 )
@@ -81,6 +110,9 @@ uint8_t cmd_test_func(
 }
 
 
+/*****************************************************************************/
+/** Greet
+ */
 uint8_t cmd_greet_func(
     struct ACYCLIC_T *a
 )
@@ -129,48 +161,12 @@ uint8_t cmd_exit_func(
 }
 
 
+/*****************************************************************************/
+/** Register commands
+ */
 int acyclic_cmd_reg(
     struct ACYCLIC_T *a
 )
 {
-    int res;
-    ACYCLIC_CMD_T *elem;
-
-    /* help */
-    res = acyclic_cmd_add(a, &a->cmds, CMD_HELP, cmd_help_func, &elem);
-
-    /* help: greet, speex, smaxx, snufz */
-    res |= acyclic_cmd_add(a, &elem->sub, CMD_GREET, NULL, NULL);
-    res |= acyclic_cmd_add(a, &elem->sub, CMD_SPEEX, NULL, NULL);
-    res |= acyclic_cmd_add(a, &elem->sub, CMD_SMAXX, NULL, NULL);
-    res |= acyclic_cmd_add(a, &elem->sub, CMD_SNUFZ, NULL, NULL);
-
-    /* test */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_TEST, cmd_test_func, &elem);
-
-    /* test: one */
-    res |= acyclic_cmd_add(a, &elem->sub, CMD_TEST_ONE, NULL, NULL);
-
-    /* greet */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_GREET, cmd_greet_func, &elem);
-
-    /* greet: me */
-    res |= acyclic_cmd_add(a, &elem->sub, CMD_ME, NULL, NULL);
-
-    /* rocky */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_ROCKY, NULL, NULL);
-
-    /* rockie */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_ROCKIE, NULL, NULL);
-
-    /* same */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_SAME, NULL, NULL);
-
-    /* sametext */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_SAMETEXT, NULL, NULL);
-
-    /* exit */
-    res |= acyclic_cmd_add(a, &a->cmds, CMD_EXIT, cmd_exit_func, NULL);
-
-    return res;
+    return acyclic_cmd_add(a, &a->cmds, &cmd_exit);
 }

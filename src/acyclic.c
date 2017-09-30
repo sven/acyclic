@@ -984,33 +984,16 @@ static void acyclic_history_dump(
 int acyclic_cmd_add(
     ACYCLIC_T *a,
     ACYCLIC_CMD_T **cmd_root,                   /**< root */
-    const char * const cmd_name,                /**< name */
-    ACYCLIC_CMD_FUNC_T cmd_func,                /**< function */
-    ACYCLIC_CMD_T **cmd_new                     /**< new command */
+    ACYCLIC_CMD_T *cmd_new                      /**< new command */
 )
 {
-    struct ACYCLIC_CMD_T **cmd;
+    ACYCLIC_CMD_T **cmd;                        /* cmd iterator */
 
     ACYCLIC_UNUSED(a);
 
     /* find end of command list */
     for (cmd = cmd_root; *cmd; cmd = &(*cmd)->next);
-
-    /* allocate element for new command */
-    *cmd = ACYCLIC_PLAT_CALLOC(sizeof(ACYCLIC_CMD_T));
-    if (!*cmd) {
-        return -1;
-    }
-
-    /* assign command name */
-    (*cmd)->name = cmd_name;
-    (*cmd)->len = (unsigned int) strlen(cmd_name);
-    (*cmd)->func = cmd_func;
-
-    /* assign new command to callers variable */
-    if (cmd_new) {
-        *cmd_new = *cmd;
-    }
+    *cmd = cmd_new;
 
     return 0;
 }
