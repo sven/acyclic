@@ -13,10 +13,12 @@
 
 
 /*****************************************************************************/
-/* Debug */
+/* Configuration */
 /*****************************************************************************/
 #define ACYCLIC_DBG                 0
 #define ACYCLIC_DBG_ARGS_SHOW       0
+#define ACYCLIC_HISTORY             1
+#define ACYCLIC_HISTORY_DUMP        0
 
 
 /*****************************************************************************/
@@ -127,29 +129,30 @@ typedef struct ACYCLIC_ARG_T {
 typedef struct ACYCLIC_T {
     ACYCLIC_CMD_T *cmds;                        /**< root command list */
 
-    char *cmdline;                              /**< commandline start */
+    char cmdline[ACYCLIC_CMDLINE_LEN];          /**< commandline */
     unsigned int cmdline_len;                   /**< commandline length */
-    char cmdline_data[ACYCLIC_CMDLINE_LEN];     /**< commandline content */
 
-    /* TODO: history implementation (round robin buffer) */
-#if 0
-    char *history[4];                           /**< history entries */
-    unsigned int history_len[4];
+#if ACYCLIC_HISTORY == 1
+    char *hist;                                 /**< history start pointer */
+    unsigned int hist_cnt;                      /**< history element counter */
+    unsigned int hist_scroll_cnt;               /**< history scroll counter */
+    unsigned int hist_scroll_idx;               /**< history scroll element index */
+    unsigned int hist_scroll_len;               /**< length of previous element */
 #endif
 
     /* application arguments */
     uint8_t arg_cnt;                            /**< count of found arguments */
     ACYCLIC_ARG_T args[ACYCLIC_ARG_COUNT];      /**< found arguments */
 
-    uint8_t key;
-    uint8_t cnt_tab;
+    uint8_t key;                                /**< current key */
+    uint8_t cnt_tab;                            /**< tab key count */
+
     uint8_t flg_string;                         /**< in-string flag */
     uint8_t flg_prompt;                         /**< show prompt */
     uint8_t flg_cmd_show;                       /**< show commandline */
-    uint8_t flg_match_exact;
-
-    uint8_t flg_key_escape;
-    uint8_t flg_key_cursor;
+    uint8_t flg_match_exact;                    /**< exact match flag */
+    uint8_t flg_key_escape;                     /**< escape sequence flag */
+    uint8_t flg_key_cursor;                     /**< cursor key flag */
 
     uint8_t cnt_utf8;                           /**< UTF-8 char skip counter */
     uint8_t res_func;                           /**< result of last called function */

@@ -76,9 +76,33 @@ static int acyclic_key_pre(
     ACYCLIC_T *a                                /**< instance handle */
 );
 
-static void acyclic_history(
+#if ACYCLIC_HISTORY == 1
+static void acyclic_history_push(
     ACYCLIC_T *a                                /**< instance handle */
 );
+
+static void acyclic_history_pop(
+    ACYCLIC_T *a                                /**< instance handle */
+);
+
+static void acyclic_history_up(
+    ACYCLIC_T *a                                /**< instance handle */
+);
+
+static void acyclic_history_down(
+    ACYCLIC_T *a                                /**< instance handle */
+);
+
+#  if ACYCLIC_HISTORY_DUMP == 1
+static void acyclic_history_dump(
+    ACYCLIC_T *a                                /**< instance handle */
+);
+#  endif
+#endif
+
+#if (ACYCLIC_HISTORY == 0) || (ACYCLIC_HISTORY_DUMP == 0)
+#  define acyclic_history_dump(a)
+#endif
 
 
 /*****************************************************************************/
@@ -99,8 +123,10 @@ int acyclic_init(
     /* initialize acyclic data */
     a->flg_prompt = 1;
 
-    /* set initial commandline entry */
-    a->cmdline = a->cmdline_data;
+#if ACYCLIC_HISTORY == 1
+    /* initialize history pointer */
+    a->hist = &a->cmdline[ACYCLIC_CMDLINE_LEN];
+#endif
 
     /* register commands */
     if (acyclic_cmd_reg(a)) {
@@ -133,6 +159,14 @@ void acyclic_input(
     if (acyclic_key_pre(a)) {
         return;
     }
+
+#if ACYCLIC_HISTORY == 1
+    /* if in scroll mode, update current command */
+    if (a->hist_scroll_cnt) {
+        acyclic_history_pop(a);
+        acyclic_history_dump(a);
+    }
+#endif
 
     /* check for tabulator */
     if (ACYCLIC_KEY_TAB == a->key) {
@@ -167,6 +201,9 @@ void acyclic_input(
         default:
             acyclic_key(a);
     }
+
+    /* dump history state if enabled */
+    acyclic_history_dump(a);
 
     /* show current commandline */
     acyclic_cmdline(a);
@@ -449,11 +486,32 @@ static void acyclic_char_add(
     char chr                                    /**< character */
 )
 {
-    if (a->cmdline_len < ACYCLIC_CMDLINE_LEN) {
-        a->cmdline[a->cmdline_len++] = chr;
-        ACYCLIC_PLAT_PUTC(chr);
-        ACYCLIC_PLAT_DBG_PRINTF("[add]    a->cmdline_len: %3u | a->cmdline[%u]: %c | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len - 1, a->key, a->cmdline_len, a->cmdline);
+#if ACYCLIC_HISTORY == 1
+    unsigned int hist_len;                      /* history element len */
+#endif
+
+    if (a->cmdline_len >= ACYCLIC_CMDLINE_LEN) {
+        return;
     }
+
+#if ACYCLIC_HISTORY == 1
+    /* check if oldest history element needs to be overwritten
+     * note: "+ 1" for at least one movebyte */
+    if (a->hist_cnt && ((a->cmdline + a->cmdline_len + sizeof(a->cmdline_len) + 1) >= a->hist)) {
+
+        /* copy element len with care of alignment */
+        a->hist_cnt--;
+        memmove(&hist_len, a->hist + a->hist_cnt * sizeof(a->cmdline_len), sizeof(a->cmdline_len));
+
+        /* remove oldest history element */
+        memmove(a->hist + sizeof(a->cmdline_len) + hist_len, a->hist, a->hist_cnt * sizeof(a->cmdline_len));
+        a->hist += sizeof(a->cmdline_len) + hist_len;
+    }
+#endif /* ACYCLIC_HISTORY == 1 */
+
+    a->cmdline[a->cmdline_len++] = chr;
+    ACYCLIC_PLAT_PUTC(chr);
+    ACYCLIC_PLAT_DBG_PRINTF("[add]    a->cmdline_len: %3u | a->cmdline[%u]: %c | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len - 1, chr, a->cmdline_len, a->cmdline);
 }
 
 
@@ -487,9 +545,6 @@ static void acyclic_enter(
 
     ACYCLIC_PLAT_NEWLINE();
 
-    /* store commandline in history */
-    acyclic_history(a);
-
     /* reset application arguments */
     a->arg_cnt = 0;
     a->args[0].cmd = NULL;
@@ -500,9 +555,6 @@ static void acyclic_enter(
     }
     a->flg_prompt = 1;
     ACYCLIC_PLAT_DBG_PRINTF("[enter]  a->cmdline_len: %3u", a->cmdline_len);
-
-    /* clear commandline */
-    a->cmdline_len = 0;
 
     /* check if strings are closed */
     if (a->flg_string) {
@@ -539,6 +591,14 @@ static void acyclic_enter(
             a->res_func = ((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func(a);
         }
     }
+
+#if ACYCLIC_HISTORY == 1
+    /* move command to history */
+    acyclic_history_push(a);
+#endif
+
+    /* clear command */
+    a->cmdline_len = 0;
 }
 
 
@@ -671,8 +731,19 @@ static int acyclic_key_pre(
 
         return 0;
     }
+#if ACYCLIC_HISTORY == 1
+    else {
+        switch (a->key) {
+            case ACYCLIC_KEY_UP:
+                acyclic_history_up(a);
+                break;
 
-    /* TODO: handle escape sequence (for example in history scrolling) */
+            case ACYCLIC_KEY_DOWN:
+                acyclic_history_down(a);
+                break;
+        }
+    }
+#endif
 
     /* clear escape sequence state */
     a->flg_key_cursor = 0;
@@ -682,20 +753,233 @@ static int acyclic_key_pre(
 }
 
 
+#if ACYCLIC_HISTORY == 1
 /*****************************************************************************/
 /** Store current command in history
+ *
+ * History structure: | Len1 | Len2 | Len3 | Cmd3 | Cmd2 | Cmd1 |
+ * Entry 1 is the newest and 3 the oldest.
  */
-static void acyclic_history(
+static void acyclic_history_push(
     ACYCLIC_T *a                                /**< instance handle */
 )
 {
-    ACYCLIC_UNUSED(a);
+    unsigned int hist_len;                      /* history content len */
+    unsigned int mov_len;                       /* move space len */
 
-#if 0
-    memcpy(a->history, a->cmdline, a->cmdline_len);
-    a->history_len = a->cmdline_len;
-#endif
+    /* check if cmdline is empty or if there is no space for cmdline + length +
+     * minimal move space */
+    if ((!a->cmdline_len) ||
+        (a->cmdline_len >= (ACYCLIC_CMDLINE_LEN - sizeof(a->cmdline_len) - 1))) {
+        return;
+    }
+
+    /* add new length to history length storage, memmove is used to don't run
+     * into alignment problems */
+    a->hist -= sizeof(a->cmdline_len);
+    memmove(a->hist, &a->cmdline_len, sizeof(a->cmdline_len));
+
+    /* calculate history length */
+    hist_len = (unsigned int) (a->cmdline + ACYCLIC_CMDLINE_LEN - a->hist);
+    mov_len = ACYCLIC_CMDLINE_LEN - hist_len - a->cmdline_len;
+
+    while (a->cmdline_len) {
+        if (a->cmdline_len < mov_len) {
+            mov_len = a->cmdline_len;
+        }
+
+        /* move history in move space direction */
+        a->hist -= mov_len;
+        memmove(a->hist, &a->hist[mov_len], hist_len);
+
+        /* move command to history end position */
+        a->cmdline_len -= mov_len;
+        memmove(&a->hist[hist_len], &a->cmdline[a->cmdline_len], mov_len);
+    }
+
+    /* increase history counter */
+    a->hist_cnt++;
 }
+
+
+/*****************************************************************************/
+/** Restore selected history command
+ *
+ * History structure: | Len1 | Len2 | Len3 | Cmd3 | Cmd2 | Cmd1 |
+ * Entry 1 is the newest and 3 the oldest.
+ */
+static void acyclic_history_pop(
+    ACYCLIC_T *a                                /**< instance handle */
+)
+{
+    unsigned int mov_len;                       /* move space len */
+    char *hist_entry;                           /* history entry */
+
+    /* clear commandline */
+    a->cmdline_len = 0;
+
+    /* remove specific length from length array */
+    memmove(&a->hist[(a->hist_cnt - a->hist_scroll_cnt + 1) * sizeof(a->cmdline_len)], a->hist, (a->hist_scroll_cnt - 1) * sizeof(a->cmdline_len));
+    a->hist_cnt--;
+    a->hist += sizeof(a->cmdline_len);
+
+    /* calculate lengths and positions */
+    mov_len = (unsigned int) (a->hist - a->cmdline);
+    hist_entry = a->cmdline + ACYCLIC_CMDLINE_LEN - a->hist_scroll_idx;
+
+    /* move selected commandline to command */
+    while (a->hist_scroll_len) {
+
+        if (a->hist_scroll_len < mov_len) {
+            mov_len = a->hist_scroll_len;
+        }
+
+        /* move history entry to commandline */
+        memmove(&a->cmdline[a->cmdline_len], hist_entry, mov_len);
+
+        /* shrink history entry */
+        memmove(&a->hist[mov_len], a->hist, (unsigned int) (hist_entry - a->hist));
+
+        hist_entry += mov_len;
+        a->cmdline_len += mov_len;
+        a->hist += mov_len;
+        a->hist_scroll_len -= mov_len;
+    }
+
+    /* end scrolling */
+    a->hist_scroll_cnt = 0;
+    a->hist_scroll_idx = 0;
+}
+
+
+/*****************************************************************************/
+/** Scroll to older entries in history
+ */
+static void acyclic_history_up(
+    ACYCLIC_T *a                                /**< instance handle */
+)
+{
+    char *hist_entry;
+    unsigned int cnt;
+
+    /* stop at history end */
+    if (a->hist_scroll_cnt >= a->hist_cnt) {
+        return;
+    }
+
+    /* first scroll => backup commandline */
+    if (!a->hist_scroll_cnt) {
+        a->hist_scroll_len = a->cmdline_len;
+    }
+
+    /* remove current line */
+    for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
+        ACYCLIC_PLAT_BACKSPACE();
+    }
+
+    /* read current entry length without alignment struggle */
+    memmove(&a->hist_scroll_len, &a->hist[a->hist_scroll_cnt * sizeof(a->cmdline_len)], sizeof(a->cmdline_len));
+    a->hist_scroll_idx += a->hist_scroll_len;
+
+    /* print history line */
+    hist_entry = &a->cmdline[ACYCLIC_CMDLINE_LEN - a->hist_scroll_idx];
+    for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
+        ACYCLIC_PLAT_PUTC(hist_entry[cnt]);
+    }
+
+    /* scroll up */
+    a->hist_scroll_cnt++;
+}
+
+
+/*****************************************************************************/
+/** Scroll to newer entries in history
+ */
+static void acyclic_history_down(
+    ACYCLIC_T *a                                /**< instance handle */
+)
+{
+    char *hist_entry;
+    unsigned int cnt;
+
+    /* stop at history start */
+    if (!a->hist_scroll_cnt) {
+        return;
+    }
+
+    /* remove current line */
+    for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
+        ACYCLIC_PLAT_BACKSPACE();
+    }
+
+    /* scroll down */
+    a->hist_scroll_cnt--;
+
+    /* restore commandline on last element */
+    if (!a->hist_scroll_cnt) {
+        a->hist_scroll_idx = 0;
+        a->flg_cmd_show = 1;
+        acyclic_cmdline(a);
+        return;
+    }
+
+    /* step over current element */
+    a->hist_scroll_idx -= a->hist_scroll_len;
+
+    /* read current entry length without alignment struggle */
+    memmove(&a->hist_scroll_len, &a->hist[(a->hist_scroll_cnt - 1) * sizeof(a->cmdline_len)], sizeof(a->cmdline_len));
+
+    /* print history line */
+    hist_entry = &a->cmdline[ACYCLIC_CMDLINE_LEN - a->hist_scroll_idx];
+    for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
+        ACYCLIC_PLAT_PUTC(hist_entry[cnt]);
+    }
+}
+
+
+#  if ACYCLIC_HISTORY_DUMP == 1
+/*****************************************************************************/
+/** Dump history
+ */
+static void acyclic_history_dump(
+    ACYCLIC_T *a                                /**< instance handle */
+)
+{
+    unsigned int cnt;                           /* counter */
+    unsigned int len;                           /* length */
+    char *pos;                                  /* position */
+    unsigned int hist_len;                      /* history length */
+
+    printf("\n|");
+    for (cnt = 0; cnt < a->cmdline_len; cnt++) {
+        printf("%c", a->cmdline[cnt]);
+    }
+    printf("|");
+
+    len = (unsigned int) (a->hist - a->cmdline - a->cmdline_len);
+    for (cnt = 0; cnt < len; cnt++) {
+        printf("P");
+    }
+    printf("|");
+
+    for (cnt = 0; cnt < a->hist_cnt; cnt++) {
+        memmove(&hist_len, &a->hist[cnt * sizeof(a->cmdline_len)], sizeof(a->cmdline_len));
+        printf("%u_%u|", cnt, hist_len);
+    }
+
+    pos = a->hist + a->hist_cnt * sizeof(a->cmdline_len);;
+    for (cnt = a->hist_cnt; cnt; cnt--) {
+        memmove(&hist_len, &a->hist[(cnt - 1) * sizeof(a->cmdline_len)], sizeof(a->cmdline_len));
+        printf("%u_%.*s|", cnt - 1, hist_len, pos);
+        pos += hist_len;
+    }
+    printf("\n");
+
+    a->flg_cmd_show = 1;
+    a->flg_prompt = 1;
+}
+#  endif /* ACYCLIC_HISTORY_DUMP == 1 */
+#endif /* ACYCLIC_HISTORY == 1 */
 
 
 /*****************************************************************************/
