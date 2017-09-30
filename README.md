@@ -4,7 +4,7 @@
 ## Author
 
   * [Sven Bachmann](mailto:dev@mcbachmann.de)
-  * [ACyCLIC at GitHub][https://github.com/sven/acyclic]
+  * [ACyCLIC at GitHub](https://github.com/sven/acyclic)
 
 
 ## Ports
