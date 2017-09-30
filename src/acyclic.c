@@ -40,10 +40,6 @@ static uint8_t acyclic_substr(
     unsigned int *len                           /**< overall length */
 );
 
-static void acyclic_tab_count(
-    ACYCLIC_T *a                                /**< instance handle */
-);
-
 static void acyclic_key(
     ACYCLIC_T *a                                /**< instance handle */
 );
@@ -138,8 +134,14 @@ void acyclic_input(
         return;
     }
 
-    /* handle tab */
-    acyclic_tab_count(a);
+    /* check for tabulator */
+    if (ACYCLIC_KEY_TAB == a->key) {
+        if (a->cnt_tab < 2) {
+            a->cnt_tab++;
+        }
+    } else {
+        a->cnt_tab = 0;
+    }
 
     /* check control characters */
     switch (a->key) {
@@ -436,25 +438,6 @@ static uint8_t acyclic_substr(
 
     ACYCLIC_PLAT_DBG_PRINTF("[substr] str: '%.*s', len: %d", *sub_len, sub, *sub_len);
     return res;
-}
-
-
-/*****************************************************************************/
-/** Tab key handler
- *
- * Count successive tab keys or reset tab count for any other key pressed.
- */
-static void acyclic_tab_count(
-    ACYCLIC_T *a                                /**< instance handle */
-)
-{
-    if (ACYCLIC_KEY_TAB == a->key) {
-        if (a->cnt_tab < 2) {
-            a->cnt_tab++;
-        }
-    } else {
-        a->cnt_tab = 0;
-    }
 }
 
 
