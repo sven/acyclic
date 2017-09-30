@@ -22,7 +22,6 @@
 /*****************************************************************************/
 /* Defines */
 /*****************************************************************************/
-#define ACYCLIC_PLAT_CALLOC(x)          calloc(1, x)
 #define ACYCLIC_PLAT_PUTC(x)            putchar(x)
 #define ACYCLIC_PLAT_PUTS(x)            fputs(x, stdout)
 #define ACYCLIC_PLAT_PRINTF(...)        printf(__VA_ARGS__)
