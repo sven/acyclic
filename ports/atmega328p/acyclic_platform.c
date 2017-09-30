@@ -15,7 +15,9 @@
 /* Defines */
 /*****************************************************************************/
 #define BAUD 9600
-#define UBRR_VAL ((F_CPU / (16UL * BAUD)) - 1)
+
+/* http://www.nongnu.org/avr-libc/user-manual/FAQ.html#faq_wrong_baud_rate */
+#define UBRR_VAL ((F_CPU + BAUD * 8L) / (BAUD * 16L) - 1)
 
 
 /*****************************************************************************/
