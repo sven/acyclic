@@ -22,7 +22,7 @@
 ```
     # Linux (runs a little test script after compilation)
     make linux
-    ./acyclic
+    ./build/acyclic
 
     # Atmega8
     make atmega8
