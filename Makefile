@@ -17,8 +17,10 @@ CFLAGS_CLANG = \
     -Wno-disabled-macro-expansion \
     -fcolor-diagnostics
 
-CFLAGS_AVR = \
+CFLAGS_ATMEGA = \
+    $(CFLAGS) \
     -Os \
+    -fno-fat-lto-objects \
     -mcall-prologues
 
 
@@ -45,20 +47,20 @@ linux:
 
 atmega8:
 	@mkdir -p build
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -Iports/atmega8 -mmcu=atmega8 -DF_CPU=3686400 -ffunction-sections -fdata-sections -c -o build/acyclic.o src/acyclic.c
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -Iports/atmega8 -mmcu=atmega8 -DF_CPU=3686400 -ffunction-sections -fdata-sections -c -o build/acyclic_platform.o ports/atmega8/acyclic_platform.c
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -Iports/atmega8 -mmcu=atmega8 -DF_CPU=3686400 -ffunction-sections -fdata-sections -c -o build/acyclic_cmds.o tests/acyclic_cmds.c
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -mmcu=atmega8 -DF_CPU=3686400 -Wl,-Map,build/acyclic_atmega.map -Wl,--gc-sections -Wl,--relax -o build/acyclic.elf build/acyclic.o build/acyclic_cmds.o build/acyclic_platform.o
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic.o src/acyclic.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic_platform.o ports/atmega8/acyclic_platform.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic_cmds.o tests/acyclic_cmds.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Wl,-Map,build/acyclic_atmega8.map -Wl,--gc-sections -Wl,--relax -o build/acyclic.elf build/acyclic.o build/acyclic_cmds.o build/acyclic_platform.o
 	$(OC) -O ihex -R .eeprom build/acyclic.elf build/acyclic.hex
 	$(OS) build/acyclic.elf
 
 
 atmega328p:
 	@mkdir -p build
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -Iports/atmega328p -DF_CPU=16000000UL -mmcu=atmega328p -ffunction-sections -fdata-sections -c -o build/acyclic.o src/acyclic.c
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -Iports/atmega328p -DF_CPU=16000000UL -mmcu=atmega328p -ffunction-sections -fdata-sections -c -o build/acyclic_platform.o ports/atmega328p/acyclic_platform.c
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -Iports/atmega328p -DF_CPU=16000000UL -mmcu=atmega328p -ffunction-sections -fdata-sections -c -o build/acyclic_cmds.o tests/acyclic_cmds.c
-	$(CC) $(CFLAGS) $(CFLAGS_AVR) -DF_CPU=16000000UL -mmcu=atmega328p -Wl,-Map,build/acyclic_atmega328p.map -Wl,--gc-sections -Wl,--relax -o build/acyclic.elf build/acyclic.o build/acyclic_cmds.o build/acyclic_platform.o
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic.o src/acyclic.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic_platform.o ports/atmega328p/acyclic_platform.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic_cmds.o tests/acyclic_cmds.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Wl,-Map,build/acyclic_atmega328p.map -Wl,--gc-sections -Wl,--relax -o build/acyclic.elf build/acyclic.o build/acyclic_cmds.o build/acyclic_platform.o
 	$(OC) -O ihex -R .eeprom build/acyclic.elf build/acyclic.hex
 	$(OS) build/acyclic.elf
 
