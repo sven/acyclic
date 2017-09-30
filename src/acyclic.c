@@ -106,12 +106,6 @@ static void acyclic_history_dump(
 
 
 /*****************************************************************************/
-/* Local variables */
-/*****************************************************************************/
-uint8_t acyclic_flg_exit = 0;                   /**< exit flag */
-
-
-/*****************************************************************************/
 /** ACyCLIC init
  *
  * The handle pointer must point to a zeroed memory location.
@@ -555,7 +549,7 @@ static void acyclic_enter(
     a->func = NULL;
 
     acyclic_ac(a);
-    if (acyclic_flg_exit) {
+    if (a->flg_exit) {
         return;
     }
     a->flg_prompt = 1;

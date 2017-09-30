@@ -142,16 +142,11 @@ typedef struct ACYCLIC_T {
     uint8_t flg_match_exact;                    /**< exact match flag */
     uint8_t flg_key_escape;                     /**< escape sequence flag */
     uint8_t flg_key_cursor;                     /**< cursor key flag */
+    uint8_t flg_exit;                           /**< exit flag */
 
     uint8_t cnt_utf8;                           /**< UTF-8 char skip counter */
     uint8_t res_func;                           /**< result of last called function */
 } ACYCLIC_T;
-
-
-/*****************************************************************************/
-/* Global variables */
-/*****************************************************************************/
-extern uint8_t acyclic_flg_exit;                /**< exit flag */
 
 
 /*****************************************************************************/

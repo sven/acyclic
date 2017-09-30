@@ -57,7 +57,7 @@ __attribute__((weak)) int main(
     }
 
     /* handle input */
-    while (!acyclic_flg_exit) {
+    while (!g_a->flg_exit) {
         acyclic_input(g_a, (uint8_t) getchar());
     }
 

@@ -48,7 +48,7 @@ int main(
     acyclic_init(&g_a);
 
     /* handle input */
-    while (!acyclic_flg_exit) {
+    while (!g_a.flg_exit) {
 
         /* wait for character */
         while (!(UCSR0A & (1 << RXC0)));

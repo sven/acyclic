@@ -107,13 +107,16 @@ uint8_t cmd_greet_func(
 }
 
 
+/*****************************************************************************/
+/** Exit
+ */
 uint8_t cmd_exit_func(
     struct ACYCLIC_T *a
 )
 {
     ACYCLIC_UNUSED(a);
 
-    acyclic_flg_exit = 1;
+    a->flg_exit = 1;
 
     ACYCLIC_PLAT_NEWLINE();
     ACYCLIC_PLAT_PUTS_NL("*******");
