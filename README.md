@@ -41,7 +41,7 @@
 
 ## MIT License
 
-    Copyright (c) 2016, Sven Bachmann <dev@mcbachmann.de>
+    Copyright (c) 2016-2017, Sven Bachmann <dev@mcbachmann.de>
     ACyCLIC at GitHub: https://github.com/sven/acyclic
     
     Permission is hereby granted, free of charge, to any person obtaining a copy
