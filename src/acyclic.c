@@ -358,6 +358,10 @@ static void acyclic_ac(
         if (cmds_found && (cmds_found->len == arg_len)) {
             a->args[a->arg_cnt].name = cmds_found->name;
             a->args[a->arg_cnt].cmd = cmds_found;
+
+            if (cmds_found->func) {
+                a->func = cmds_found->func;
+            }
         } else {
             a->args[a->arg_cnt].name = arg;
             a->args[a->arg_cnt].cmd = NULL;
@@ -548,6 +552,7 @@ static void acyclic_enter(
     /* reset application arguments */
     a->arg_cnt = 0;
     a->args[0].cmd = NULL;
+    a->func = NULL;
 
     acyclic_ac(a);
     if (acyclic_flg_exit) {
@@ -582,13 +587,10 @@ static void acyclic_enter(
 
     /* call function callback if available */
     if (a->args[0].cmd) {
-
-        /* warn if no function was registered */
-        if (!((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func) {
-            ACYCLIC_PLAT_PUTS_NL("no function assigned");
+        if (a->func) {
+            a->res_func = a->func(a);
         } else {
-            /* execute function */
-            a->res_func = ((ACYCLIC_CMD_ROOT_T *) a->args[0].cmd)->func(a);
+            ACYCLIC_PLAT_PUTS_NL("no function assigned");
         }
     }
 
@@ -994,16 +996,14 @@ int acyclic_cmd_add(
 )
 {
     struct ACYCLIC_CMD_T **cmd;
-    unsigned int flg_origin;
 
-    /* test for origin command list */
-    flg_origin = (*cmd_root == a->cmds) ? ACYCLIC_TRUE : ACYCLIC_FALSE;
+    ACYCLIC_UNUSED(a);
 
     /* find end of command list */
     for (cmd = cmd_root; *cmd; cmd = &(*cmd)->next);
 
     /* allocate element for new command */
-    *cmd = ACYCLIC_PLAT_CALLOC((flg_origin) ? sizeof(ACYCLIC_CMD_ROOT_T) : sizeof(ACYCLIC_CMD_T));
+    *cmd = ACYCLIC_PLAT_CALLOC(sizeof(ACYCLIC_CMD_T));
     if (!*cmd) {
         return -1;
     }
@@ -1011,11 +1011,7 @@ int acyclic_cmd_add(
     /* assign command name */
     (*cmd)->name = cmd_name;
     (*cmd)->len = (unsigned int) strlen(cmd_name);
-
-    /* assign function pointer on origin list */
-    if (flg_origin) {
-        ((ACYCLIC_CMD_ROOT_T *) *cmd)->func = cmd_func;
-    }
+    (*cmd)->func = cmd_func;
 
     /* assign new command to callers variable */
     if (cmd_new) {

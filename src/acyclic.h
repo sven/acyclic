@@ -100,21 +100,9 @@ typedef struct ACYCLIC_CMD_T {
     struct ACYCLIC_CMD_T *sub;                  /**< sub commands */
 
     struct ACYCLIC_CMD_T *next_ac;              /**< next found AC command */
-} ACYCLIC_CMD_T;
-
-
-/**< ACyCLIC root command data, like ACYCLIC_CMD_T but with function pointer */
-typedef struct ACYCLIC_CMD_ROOT_T {
-    const char * name;                          /**< command name */
-    unsigned int len;                           /**< command length */
-
-    struct ACYCLIC_CMD_T *next;                 /**< next command */
-    struct ACYCLIC_CMD_T *sub;                  /**< sub commands */
-
-    struct ACYCLIC_CMD_T *next_ac;              /**< next found AC command */
 
     ACYCLIC_CMD_FUNC_T func;                    /**< command function */
-} ACYCLIC_CMD_ROOT_T;
+} ACYCLIC_CMD_T;
 
 
 /**< ACyCLIC arguments data */
@@ -143,6 +131,7 @@ typedef struct ACYCLIC_T {
     /* application arguments */
     uint8_t arg_cnt;                            /**< count of found arguments */
     ACYCLIC_ARG_T args[ACYCLIC_ARG_COUNT];      /**< found arguments */
+    ACYCLIC_CMD_FUNC_T func;                    /**< command function */
 
     uint8_t key;                                /**< current key */
     uint8_t cnt_tab;                            /**< tab key count */
