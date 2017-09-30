@@ -82,6 +82,22 @@ struct ACYCLIC_CMD_DATA_T;
 
 
 /*****************************************************************************/
+/* Macros */
+/*****************************************************************************/
+/* id, name, next, sub, func */
+#define ACYCLIC_CMD(cmd_name, cmd_desc, cmd_next, cmd_sub, cmd_func) \
+    static const char cmd_name_ ## cmd_name[] = cmd_desc; \
+    static ACYCLIC_CMD_T cmd_ ## cmd_name = { \
+        cmd_name_ ## cmd_name, \
+        (sizeof(cmd_desc) / sizeof(cmd_desc[0])) - 1, \
+        cmd_next, \
+        cmd_sub, \
+        NULL, \
+        cmd_func, \
+    }
+
+
+/*****************************************************************************/
 /* Typedefs */
 /*****************************************************************************/
 typedef uint8_t (* ACYCLIC_CMD_FUNC_T)(struct ACYCLIC_T *a);
