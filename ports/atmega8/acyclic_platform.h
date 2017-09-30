@@ -17,14 +17,11 @@
 /*****************************************************************************/
 /* Platform defines */
 /*****************************************************************************/
-#define ACYCLIC_PLAT_MEMPOOL            256
-
 #include <avr/io.h>
 #ifndef NULL
 #  define NULL 0
 #endif
 
-#define ACYCLIC_PLAT_CALLOC(x)          acyclic_plat_calloc(x)
 #define ACYCLIC_PLAT_PUTC(x)            acyclic_plat_putc(x)
 #define ACYCLIC_PLAT_PUTS(x)            acyclic_plat_puts(x)
 #define ACYCLIC_PLAT_PRINTF(...)
@@ -41,10 +38,6 @@
 /*****************************************************************************/
 /* Prototypes */
 /*****************************************************************************/
-void * acyclic_plat_calloc(
-    unsigned int size                           /**< allocation size */
-);
-
 void acyclic_plat_putc(
     char c
 );

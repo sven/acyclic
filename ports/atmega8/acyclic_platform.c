@@ -24,8 +24,6 @@
 /* Local variables */
 /*****************************************************************************/
 static ACYCLIC_T g_a;                           /**< ACyCLIC handle */
-static uint8_t acyclic_mem[ACYCLIC_PLAT_MEMPOOL]; /**< memory pool */
-static unsigned int acyclic_mem_pos = 0;        /**< memory pool position */
 
 
 /*****************************************************************************/
@@ -58,35 +56,6 @@ int main(
     }
 
     return 0;
-}
-
-
-/*****************************************************************************/
-/** Local mem allocator
- *
- * @retval ptr successful
- * @retval null failed
- */
-void * acyclic_plat_calloc(
-    unsigned int size                           /**< allocation size */
-)
-{
-    uint8_t *ptr;
-    uint8_t *ptr_end;
-
-    if ((ACYCLIC_PLAT_MEMPOOL - acyclic_mem_pos) < size) {
-        return NULL;
-    }
-
-    ptr = &acyclic_mem[acyclic_mem_pos];
-    acyclic_mem_pos += size;
-    ptr_end = &acyclic_mem[acyclic_mem_pos];
-
-    for (; ptr_end >= ptr; ptr_end--) {
-        *ptr_end = 0;
-    }
-
-    return ptr;
 }
 
 
