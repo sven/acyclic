@@ -34,6 +34,30 @@
 ```
 
 
+## Footprint
+
+A small overview of the current footprint when compiling the application that
+is used for the testcases is shown here.
+
+```
+$> make size_all
+
+History disabled
+----------------
+   text    data     bss     dec     hex filename
+   9242    1304     112   10658    29a2 build/acyclic_linux.elf
+   2154     486      98    2738     ab2 build/acyclic_atmega8.elf
+   2248     486      98    2832     b10 build/acyclic_atmega328p.elf
+
+History enabled
+---------------
+   text    data     bss     dec     hex filename
+  11176    1312     112   12600    3138 build/acyclic_linux.elf
+   3022     486     108    3616     e20 build/acyclic_atmega8.elf
+   3116     486     108    3710     e7e build/acyclic_atmega328p.elf
+```
+
+
 ## Contributors
 
   * [port GmbH](http://www.port.de)
