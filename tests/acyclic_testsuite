@@ -66,6 +66,152 @@ expect "arg: greet"
 expect "arg: --fmt=\"%s %s\""
 expect "arg: \"Foo\""
 expect "arg: \"Bar\""
-
 expect "$ "
+
+
+###########################
+###########################
+#### history testcases ####
+###########################
+###########################
+
+#######
+# case:
+#   1. clear history
+#   2. enter command, exec
+#   3. scroll back
+#   4. exec again
+####################################################
+
+## clear history
+send "12345678901234567890123456789012345678901234567890\r"
+expect "command not found"
+expect "$ "
+
+## push 1. cmd
+send "greet me\r"
+expect "hello from me"
+
+## test scrolling
+send \033\[A
+expect "greet me"
+send "\r"
+expect "hello from me"
+expect "$ "
+
+
+#######
+# case:
+#   1. clear history
+#   2. enter non-command, exec
+#   3. enter non-command, exec
+#   4. scroll up
+#   5. scroll up
+#   6. scroll down
+####################################################
+
+## clear history
+send "12345678901234567890123456789012345678901234567890\r"
+expect "command not found"
+expect "$ "
+
+## push 1. cmd
+send "bar\r"
+expect "command not found"
+expect "$ "
+
+## push 2. cmd
+send "apple\r"
+expect "command not found"
+expect "$ "
+
+## test scrolling
+send \033\[A
+expect "apple"
+send \033\[A
+expect "bar"
+send \033\[B
+expect "apple"
+send "\r"
+expect "$ "
+
+
+#######
+# case:
+#   1. clear history
+#   2. enter non-command, exec
+#   3. enter non-command, exec
+#   4. enter non-command, no exec
+#   5. scroll up
+#   6. scroll up
+#   7. scroll down
+#   8. scroll down
+#   9. command must reappear, exec
+####################################################
+
+## clear history
+send "12345678901234567890123456789012345678901234567890\r"
+expect "command not found"
+expect "$ "
+
+## push 1. cmd
+send "apple\r"
+expect "command not found"
+expect "$ "
+
+## push 2. cmd
+send "bar\r"
+expect "command not found"
+expect "$ "
+
+## type 3. cmd
+send "scrolltest"
+send \033\[A
+expect "bar"
+send \033\[A
+expect "apple"
+send \033\[B
+expect "bar"
+send \033\[B
+expect "scrolltest"
+send "\r"
+expect "$ "
+
+
+#######
+# case:
+#   1. clear history
+#   2. enter command, exec (greet)
+#   3. enter non-command, exec
+#   4. scroll up
+#   5. scroll up
+#   6. add parameter "me" to command "greet"
+#   7. execute changed command
+####################################################
+
+## clear history
+send "12345678901234567890123456789012345678901234567890\r"
+expect "command not found"
+expect "$ "
+
+## push 1. cmd
+send "greet\r"
+expect "hello from me"
+expect "$ "
+
+## push 2. cmd
+send "foobar\r"
+expect "command not found"
+expect "$ "
+
+## type 3. cmd
+send \033\[A
+expect "foobar"
+send \033\[A
+expect "greet"
+send " me\r"
+expect "arg: me"
+expect "$ "
+
+
 exit 0
