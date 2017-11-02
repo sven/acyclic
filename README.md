@@ -9,9 +9,9 @@
 
 ## Ports
 
-  * Linux (z.B. Ubuntu 16.10)
-  * Atmega8 (z.B. myAVR Board MK1)
-  * Atmega328p (z.B. Arduino Uno, Arduino Nano)
+  * Linux (eg. Ubuntu 16.10)
+  * Atmega8 (eg. myAVR Board MK1)
+  * Atmega328p (eg. Arduino Uno, Arduino Nano)
 
 
 ## Quickstart
@@ -45,16 +45,16 @@ $> make size_all
 History disabled
 ----------------
    text    data     bss     dec     hex filename
-   9242    1304     112   10658    29a2 build/acyclic_linux.elf
-   2154     486      98    2738     ab2 build/acyclic_atmega8.elf
-   2248     486      98    2832     b10 build/acyclic_atmega328p.elf
+   8429    1288     296   10013    271d build/acyclic_linux.elf
+   2778     526      98    3402     d4a build/acyclic_atmega8.elf
+   2878     526      98    3502     dae build/acyclic_atmega328p.elf
 
 History enabled
 ---------------
    text    data     bss     dec     hex filename
-  11176    1312     112   12600    3138 build/acyclic_linux.elf
-   3022     486     108    3616     e20 build/acyclic_atmega8.elf
-   3116     486     108    3710     e7e build/acyclic_atmega328p.elf
+  10299    1296     320   11915    2e8b build/acyclic_linux.elf
+   3592     526     108    4226    1082 build/acyclic_atmega8.elf
+   3694     526     108    4328    10e8 build/acyclic_atmega328p.elf
 ```
 
 
