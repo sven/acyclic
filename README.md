@@ -1,9 +1,8 @@
 # ACyCLIC - Auto Completition CommandLine InterfaCe
 
 
-## Author
+## Project
 
-  * [Sven Bachmann](mailto:dev@mcbachmann.de)
   * [ACyCLIC at GitHub](https://github.com/sven/acyclic)
 
 
@@ -56,6 +55,11 @@ History enabled
    3592     526     108    4226    1082 build/acyclic_atmega8.elf
    3694     526     108    4328    10e8 build/acyclic_atmega328p.elf
 ```
+
+
+## Author
+
+  * [Sven Bachmann](mailto:dev@mcbachmann.de)
 
 
 ## Contributors
