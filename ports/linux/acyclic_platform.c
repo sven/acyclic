@@ -10,12 +10,17 @@
  */
 #include <acyclic.h>
 #include <errno.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <termios.h>
+#include <unistd.h>
+#include <inttypes.h>
 
 
 /*****************************************************************************/
 /* Global variables */
 /*****************************************************************************/
-ACYCLIC_T *g_a;                                 /**< ACyCLIC handle ptr */
 #if ACYCLIC_DBG > 0
 FILE *acyclic_plat_dbg_fd;                      /**< debug file desc */
 #endif
@@ -37,33 +42,6 @@ static int plat_term_init(
 static int plat_term_exit(
     struct termios *term                        /**< terminal data */
 );
-
-
-/*****************************************************************************/
-/** Main
- *
- * @returns SHELL result
- */
-__attribute__((weak)) int main(
-    void
-)
-{
-    int res;                                    /* result */
-
-    /* initialize platform */
-    res = acyclic_plat_init();
-    if (res) {
-        return res;
-    }
-
-    /* handle input */
-    while (!g_a->flg_exit) {
-        acyclic_input(g_a, (uint8_t) getchar());
-    }
-
-    /* shutdown platform */
-    return acyclic_plat_exit();
-}
 
 
 /*****************************************************************************/
@@ -93,19 +71,6 @@ int acyclic_plat_init(
 
     ACYCLIC_PLAT_DBG_PRINTF("\n\nacyclic started\n");
 #endif
-
-    /* initialize ACyCLIC */
-    g_a = calloc(1, sizeof(ACYCLIC_T));
-    if (!g_a) {
-        fprintf(stderr, "Failed to allocate ACyCLIC data\n");
-        return 1;
-    }
-
-    res = acyclic_init(g_a);
-    if (res) {
-        fprintf(stderr, "Failed to initialize ACyCLIC\n");
-        acyclic_plat_exit();
-    }
 
     return res;
 }

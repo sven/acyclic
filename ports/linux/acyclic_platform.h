@@ -11,27 +11,15 @@
 #ifndef ACYCLIC_PLATFORM_H
 #define ACYCLIC_PLATFORM_H
 
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
-#include <termios.h>
-#include <unistd.h>
-#include <inttypes.h>
 
 
 /*****************************************************************************/
 /* Defines */
 /*****************************************************************************/
+#define ACYCLIC_PLAT_GETC()             getchar()
 #define ACYCLIC_PLAT_PUTC(x)            putchar(x)
-#define ACYCLIC_PLAT_PUTS(x)            fputs(x, stdout)
 #define ACYCLIC_PLAT_PRINTF(...)        printf(__VA_ARGS__)
-#define ACYCLIC_PLAT_NEWLINE()          ACYCLIC_PLAT_PUTC('\n')
-#define ACYCLIC_PLAT_SPACE()            ACYCLIC_PLAT_PUTC(' ')
-#define ACYCLIC_PLAT_BACKSPACE()        ACYCLIC_PLAT_PUTS("\b \b")
-#define ACYCLIC_PLAT_PUTS_NL(x)         ACYCLIC_PLAT_PUTS(x); ACYCLIC_PLAT_NEWLINE()
-
-#define ACYCLIC_PLAT_KEY_ENTER          10
-#define ACYCLIC_PLAT_KEY_BS             127
 
 #if ACYCLIC_DBG > 0
 extern FILE *acyclic_plat_dbg_fd;       /**< debug file desc */
@@ -39,12 +27,6 @@ extern FILE *acyclic_plat_dbg_fd;       /**< debug file desc */
 #else
 #  define ACYCLIC_PLAT_DBG_PRINTF(...)
 #endif
-
-
-/*****************************************************************************/
-/* Global variables */
-/*****************************************************************************/
-extern struct ACYCLIC_T *g_a;                   /**< ACyCLIC handle ptr */
 
 
 /*****************************************************************************/

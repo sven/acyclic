@@ -7,7 +7,11 @@ CFLAGS = \
     -Wextra \
     -Werror \
     -ggdb \
-    -Isrc
+    -Isrc \
+    -Wno-missing-field-initializers \
+    -ffunction-sections \
+    -fdata-sections
+
 
 CFLAGS_CLANG = \
     $(CFLAGS) \
@@ -50,9 +54,10 @@ linux:
 atmega8:
 	@mkdir -p build
 	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic.o src/acyclic.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic_stdio.o src/acyclic_stdio.c
 	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic_platform.o ports/atmega8/acyclic_platform.c
 	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Iports/atmega8 -c -o build/acyclic_cmds.o tests/acyclic_cmds.c
-	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Wl,-Map,build/acyclic_atmega8.map -Wl,--gc-sections -Wl,--relax -o build/acyclic_atmega8.elf build/acyclic.o build/acyclic_cmds.o build/acyclic_platform.o
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega8 -DF_CPU=3686400 -Wl,-Map,build/acyclic_atmega8.map -Wl,--gc-sections -Wl,--relax -o build/acyclic_atmega8.elf build/acyclic.o build/acyclic_stdio.o build/acyclic_cmds.o build/acyclic_platform.o
 	$(OC) -O ihex -R .eeprom build/acyclic_atmega8.elf build/acyclic_atmega8.hex
 	$(OS) build/acyclic_atmega8.elf
 
@@ -60,9 +65,10 @@ atmega8:
 atmega328p:
 	@mkdir -p build
 	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic.o src/acyclic.c
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic_stdio.o src/acyclic_stdio.c
 	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic_platform.o ports/atmega328p/acyclic_platform.c
 	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Iports/atmega328p -c -o build/acyclic_cmds.o tests/acyclic_cmds.c
-	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Wl,-Map,build/acyclic_atmega328p.map -Wl,--gc-sections -Wl,--relax -o build/acyclic_atmega328p.elf build/acyclic.o build/acyclic_cmds.o build/acyclic_platform.o
+	$(CC) $(CFLAGS_ATMEGA) -mmcu=atmega328p -DF_CPU=16000000L -Wl,-Map,build/acyclic_atmega328p.map -Wl,--gc-sections -Wl,--relax -o build/acyclic_atmega328p.elf build/acyclic.o build/acyclic_stdio.o build/acyclic_cmds.o build/acyclic_platform.o
 	$(OC) -O ihex -R .eeprom build/acyclic_atmega328p.elf build/acyclic_atmega328p.hex
 	$(OS) build/acyclic_atmega328p.elf
 

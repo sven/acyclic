@@ -4,26 +4,25 @@ set timeout 1
 spawn ./build/acyclic
 
 expect_before {
-    timeout { exit 1 }
+    timeout { puts "\n"; exit 1 }
 }
 
-expect "acyclic started"
 expect "$ "
 send "\t"
 expect ""
-send "\r"
+send "\n"
 
 expect "$ "
 send "\t\t"
 expect "exit greet help rockie rocky same sametext test"
-send "\r"
+send "\n"
 
 expect "$ "
 send "r\t"
 expect ""
 send "\t"
 expect "rockie rocky"
-send "\r"
+send "\n"
 expect "command not found"
 
 expect "$ "
@@ -31,37 +30,37 @@ send "h\t"
 expect "elp "
 send "g\t"
 expect "reet "
-send "\r"
+send "\n"
 
 expect "$ "
-send "greet me\r"
+send "greet me\n"
 expect "hello from me"
 
 expect "$ "
 send "help greet m\t"
 send "e"
 expect "help greet me"
-send "\r"
+send "\n"
 
 expect "$ "
 send "same\t\t"
 expect "same sametext"
-send "\r"
+send "\n"
 expect "no function assigned"
 
 expect "$ "
-send "test o\r"
+send "test o\n"
 expect "args: \\\[*test\\\] \\\[o\\\]"
 
 expect "$ "
-send "help 1 2 3 4\r"
+send "help 1 2 3 4\n"
 expect "show greeting"
 expect "$ "
-send "help 1 2 3 4 5\r"
+send "help 1 2 3 4 5\n"
 expect "max arg count reached"
 
 expect "$ "
-send "greet --fmt=\"%s %s\" \"Foo\" \"Bar\"\r"
+send "greet --fmt=\"%s %s\" \"Foo\" \"Bar\"\n"
 expect "arg: greet"
 expect "arg: --fmt=\"%s %s\""
 expect "arg: \"Foo\""
@@ -76,52 +75,68 @@ expect "$ "
 ###########################
 
 #######
-# case:
+# case: add cmd to history, scroll back, execute
 #   1. clear history
 #   2. enter command, exec
 #   3. scroll back
 #   4. exec again
 ####################################################
 
+
+## 0. info
+puts "\n"
+puts "##################################################"
+puts "# case: add cmd to history, scroll back, execute #"
+puts "##################################################"
+puts ""
+
 ## clear history
-send "12345678901234567890123456789012345678901234567890\r"
+send "12345678901234567890123456789012345678901234567890\n"
 expect "command not found"
 expect "$ "
 
 ## push 1. cmd
-send "greet me\r"
+send "greet me\n"
 expect "hello from me"
 
 ## test scrolling
 send \033\[A
 expect "greet me"
-send "\r"
+send "\n"
 expect "hello from me"
 expect "$ "
 
 
 #######
-# case:
+# case: scroll 2 up and 1 down
 #   1. clear history
 #   2. enter non-command, exec
 #   3. enter non-command, exec
 #   4. scroll up
 #   5. scroll up
 #   6. scroll down
+#   7. execute
 ####################################################
 
+## 0. info
+puts "\n"
+puts "################################"
+puts "# case: scroll 2 up and 1 down #"
+puts "################################"
+puts ""
+
 ## clear history
-send "12345678901234567890123456789012345678901234567890\r"
+send "12345678901234567890123456789012345678901234567890\n"
 expect "command not found"
 expect "$ "
 
 ## push 1. cmd
-send "bar\r"
+send "bar\n"
 expect "command not found"
 expect "$ "
 
 ## push 2. cmd
-send "apple\r"
+send "apple\n"
 expect "command not found"
 expect "$ "
 
@@ -132,12 +147,12 @@ send \033\[A
 expect "bar"
 send \033\[B
 expect "apple"
-send "\r"
+send "\n"
 expect "$ "
 
 
 #######
-# case:
+# case: history scroll max and min
 #   1. clear history
 #   2. enter non-command, exec
 #   3. enter non-command, exec
@@ -149,18 +164,25 @@ expect "$ "
 #   9. command must reappear, exec
 ####################################################
 
+## 0. info
+puts "\n"
+puts "####################################"
+puts "# case: history scroll max and min #"
+puts "####################################"
+puts ""
+
 ## clear history
-send "12345678901234567890123456789012345678901234567890\r"
+send "12345678901234567890123456789012345678901234567890\n"
 expect "command not found"
 expect "$ "
 
 ## push 1. cmd
-send "apple\r"
+send "apple\n"
 expect "command not found"
 expect "$ "
 
 ## push 2. cmd
-send "bar\r"
+send "bar\n"
 expect "command not found"
 expect "$ "
 
@@ -174,12 +196,12 @@ send \033\[B
 expect "bar"
 send \033\[B
 expect "scrolltest"
-send "\r"
+send "\n"
 expect "$ "
 
 
 #######
-# case:
+# case: history scroll and execute
 #   1. clear history
 #   2. enter command, exec (greet)
 #   3. enter non-command, exec
@@ -189,18 +211,25 @@ expect "$ "
 #   7. execute changed command
 ####################################################
 
+## 0. info
+puts "\n"
+puts "####################################"
+puts "# case: history scroll and execute #"
+puts "####################################"
+puts ""
+
 ## clear history
-send "12345678901234567890123456789012345678901234567890\r"
+send "12345678901234567890123456789012345678901234567890\n"
 expect "command not found"
 expect "$ "
 
 ## push 1. cmd
-send "greet\r"
+send "greet\n"
 expect "hello from me"
 expect "$ "
 
 ## push 2. cmd
-send "foobar\r"
+send "foobar\n"
 expect "command not found"
 expect "$ "
 
@@ -209,8 +238,151 @@ send \033\[A
 expect "foobar"
 send \033\[A
 expect "greet"
-send " me\r"
+send " me\n"
 expect "arg: me"
+expect "$ "
+
+## scroll up: greet me
+send \033\[A
+expect "greet me"
+
+## scroll up: foobar
+send \033\[A
+expect "foobar"
+
+
+#######
+# case: history scroll and edit
+#   1. clear history
+#   2. enter command, exec (spi foo)
+#   3. enter command, exec (spi bar)
+#   4. enter command, exec (spi knorksel)
+#   5. scroll up (spi knorksel)
+#   6. scroll up (spi bar)
+#   7. remove one character (backspace)
+#   8. scroll up (spi knorksel)
+####################################################
+
+## 0. info
+puts "\n"
+puts "#################################"
+puts "# case: history scroll and edit #"
+puts "#################################"
+puts ""
+
+## 1. clear history
+send "12345678901234567890123456789012345678901234567890\n"
+expect "command not found"
+expect "$ "
+
+## 2. push 'spi foo'
+send "spi foo\n"
+expect "command not found"
+expect "$ "
+
+## 3. push 'spi bar'
+send "spi bar\n"
+expect "command not found"
+expect "$ "
+
+## 4. push 'spi knorksel'
+send "spi knorksel\n"
+expect "command not found"
+expect "$ "
+
+## 5. scroll up 'spi knorksel'
+send \033\[A
+expect "spi knorksel"
+
+## 6. scroll up 'spi bar'
+send \033\[A
+expect "spi bar"
+
+## 7. remove one character (backspace)
+send \010
+
+## 8. scroll up 'spi knorksel'
+send \033\[A
+expect "spi knorksel"
+
+
+#######
+# case: history scroll and edit, no. 2
+#   1. clear history
+#   2. enter command, exec (spi foo)
+#   3. enter command, exec (spi bar)
+#   4. enter command, exec (spi knorksel)
+#   5. scroll up (spi knorksel)
+#   6. scroll up (spi bar)
+#   7. exec (spi bar)
+#   8. scroll up (spi bar)
+#   9. scroll up (spi knorksel)
+####################################################
+
+## 0. info
+puts "\n"
+puts "#######################################"
+puts "# case: history scroll and edit, no 2 #"
+puts "#######################################"
+puts ""
+
+## 1. clear history
+send "12345678901234567890123456789012345678901234567890\n"
+expect "command not found"
+expect "$ "
+
+## 2. push 'spi foo'
+send "spi foo\n"
+expect "command not found"
+expect "$ "
+
+## 3. push 'spi bar'
+send "spi bar\n"
+expect "command not found"
+expect "$ "
+
+## 4. push 'spi knorksel'
+send "spi knorksel\n"
+expect "command not found"
+expect "$ "
+
+## 5. scroll up 'spi knorksel'
+send \033\[A
+expect "spi knorksel"
+
+## 6. scroll up 'spi bar'
+send \033\[A
+expect "spi bar"
+
+## 7. exec 'spi bar'
+send "\n"
+
+## 8. scroll up 'spi bar'
+send \033\[A
+expect "spi bar"
+
+## 9. scroll up 'spi knorksel'
+send \033\[A
+expect "spi knorksel"
+
+
+#######
+# case: overall test end
+#   1. execute current commandline and check prompt
+####################################################
+
+## 0. info
+puts "\n"
+puts "##########################"
+puts "# case: overall test end #"
+puts "##########################"
+puts ""
+
+
+## 1. execute current command
+send "\n"
+expect "$ "
+send "\n"
 expect "$ "
 
 

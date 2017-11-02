@@ -8,6 +8,7 @@
  *
  * Licensed under the MIT license, see LICENSE for details.
  */
+#include <avr/io.h>
 #include <acyclic.h>
 
 
@@ -21,17 +22,11 @@
 
 
 /*****************************************************************************/
-/* Local variables */
-/*****************************************************************************/
-static ACYCLIC_T g_a;                           /**< ACyCLIC handle */
-
-
-/*****************************************************************************/
-/** Main
+/** Initialize platform
  *
  * @returns SHELL result
  */
-int main(
+int acyclic_plat_init(
     void
 )
 {
@@ -41,21 +36,19 @@ int main(
     UCSRB = (1 << RXEN | 1 << TXEN);
     UCSRC = (1 << URSEL) | (1 << UCSZ1) | (1 << UCSZ0);
 
-    /* initialize ACyCLIC */
-    memset(&g_a, 0, sizeof(ACYCLIC_T));
-    acyclic_init(&g_a);
-
-    /* handle input */
-    while (!g_a.flg_exit) {
-
-        /* wait for character */
-        while (!(UCSRA & (1 << RXC)));
-
-        /* feed character to ACyCLIC */
-        acyclic_input(&g_a, UDR);
-    }
-
     return 0;
+}
+
+
+/*****************************************************************************/
+/** Read character
+ */
+char acyclic_plat_getc(
+    void
+)
+{
+    while (!(UCSRA & (1 << RXC)));
+    return UDR;
 }
 
 
@@ -66,19 +59,11 @@ void acyclic_plat_putc(
     char c
 )
 {
+    if ('\n' == c) {
+        while (!(UCSRA & (1 << UDRE)));
+        UDR = '\r';
+    }
+
     while (!(UCSRA & (1 << UDRE)));
     UDR = c;
-}
-
-
-/*****************************************************************************/
-/** Put string
- */
-void acyclic_plat_puts(
-    const char *s
-)
-{
-    for (; *s; s++) {
-        acyclic_plat_putc(*s);
-    }
 }

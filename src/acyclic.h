@@ -11,6 +11,11 @@
 #ifndef ACYCLIC_H
 #define ACYCLIC_H
 
+#include <inttypes.h>
+#include <stddef.h>
+#include <stdarg.h>
+#include <limits.h>
+
 
 /*****************************************************************************/
 /* Configuration */
@@ -54,14 +59,17 @@ struct ACYCLIC_T;
 #define ACYCLIC_SUBSTR_OPEN         0
 #define ACYCLIC_SUBSTR_CLOSED       1
 
+#define ACYCLIC_KEY_BACKSPACE       8
 #define ACYCLIC_KEY_TAB             9
+#define ACYCLIC_KEY_NEWLINE         10
+#define ACYCLIC_KEY_CR              13
 #define ACYCLIC_KEY_ESCAPE          0x1b
 #define ACYCLIC_KEY_LEFT_BRACKET    0x5b
 #define ACYCLIC_KEY_UP              0x41
 #define ACYCLIC_KEY_DOWN            0x42
 #define ACYCLIC_KEY_RIGHT           0x43
 #define ACYCLIC_KEY_LEFT            0x44
-#define ACYCLIC_IS_KEY(key)         ((key >= 0x20) && (key <= 0x7e)) || ((key >= 0x80))
+#define ACYCLIC_KEY_DELETE          0x7f
 #define ACYCLIC_KEY_UTF8_1B         0x80
 #define ACYCLIC_KEY_UTF8_2B         0xc0
 #define ACYCLIC_KEY_UTF8_3B         0xe0
@@ -71,8 +79,12 @@ struct ACYCLIC_T;
 #define ACYCLIC_KEY_UTF8_BYTES_3    2
 #define ACYCLIC_KEY_UTF8_BYTES_4    3
 
+#define ACYCLIC_IS_KEY(key)         ((key >= 0x20) && (key <= 0x7e)) || ((key >= 0x80))
+
 #define ACYCLIC_FALSE               0
 #define ACYCLIC_TRUE                1
+
+#define ACYCLIC_BACKSPACE()         ACYCLIC_PLAT_PRINTF("\b \b")
 
 
 /*****************************************************************************/
@@ -189,10 +201,6 @@ int acyclic_cmd_add(
     ACYCLIC_T *a,
     ACYCLIC_CMD_T **cmd_root,                   /**< root */
     ACYCLIC_CMD_T *cmd_new                      /**< new command */
-);
-
-int acyclic_cmd_reg(
-    struct ACYCLIC_T *a
 );
 
 

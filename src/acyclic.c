@@ -8,6 +8,7 @@
  *
  * Licensed under the MIT license, see LICENSE for details.
  */
+#include <string.h>
 #include "acyclic.h"
 
 
@@ -104,6 +105,10 @@ static void acyclic_history_dump(
 #  define acyclic_history_dump(a)
 #endif
 
+#ifndef ACYCLIC_PLAT_DBG_PRINTF
+#  define ACYCLIC_PLAT_DBG_PRINTF(...)
+#endif
+
 
 /*****************************************************************************/
 /** ACyCLIC init
@@ -121,14 +126,6 @@ int acyclic_init(
     /* initialize history pointer */
     a->hist = &a->cmdline[ACYCLIC_CMDLINE_LEN];
 #endif
-
-    /* register commands */
-    if (acyclic_cmd_reg(a)) {
-        return 1;
-    }
-
-    /* greeting */
-    ACYCLIC_PLAT_PUTS_NL("acyclic started");
 
     /* show current commandline */
     acyclic_cmdline(a);
@@ -174,7 +171,8 @@ void acyclic_input(
     /* check control characters */
     switch (a->key) {
 
-        case ACYCLIC_PLAT_KEY_BS:
+        case ACYCLIC_KEY_BACKSPACE:
+        case ACYCLIC_KEY_DELETE:
             acyclic_bs(a);
             break;
 
@@ -187,7 +185,8 @@ void acyclic_input(
             acyclic_ac(a);
             break;
 
-        case ACYCLIC_PLAT_KEY_ENTER:
+        case ACYCLIC_KEY_NEWLINE:
+        case ACYCLIC_KEY_CR:
             ACYCLIC_PLAT_DBG_PRINTF("[enter]  a->cmdline_len: %3u | a->cmdline: %.*s", a->cmdline_len, a->cmdline_len, a->cmdline);
             acyclic_enter(a);
             break;
@@ -284,7 +283,7 @@ static void acyclic_ac(
         /* check if argument can be stored */
         if (ACYCLIC_ARG_COUNT <= a->arg_cnt) {
             if (0 == a->cnt_tab) {
-                ACYCLIC_PLAT_PUTS_NL("max arg count reached");
+                ACYCLIC_PLAT_PRINTF("max arg count reached\n");
                 a->args[0].cmd = NULL;
                 a->flg_cmd_show = 1;
             }
@@ -338,7 +337,7 @@ static void acyclic_ac(
             if (ACYCLIC_SRCH_FOUND != res_srch) {
                 if (0 == a->cnt_tab) {
                     if (acyclic_cmd_not_found(a)) {
-                        ACYCLIC_PLAT_PUTS_NL("command not found");
+                        ACYCLIC_PLAT_PRINTF("command not found\n");
                     }
                     a->flg_cmd_show = 1;
                 }
@@ -387,7 +386,7 @@ static void acyclic_bs(
 {
     if (a->cmdline_len) {
         a->cmdline_len--;
-        ACYCLIC_PLAT_BACKSPACE();
+        ACYCLIC_BACKSPACE();
     }
     ACYCLIC_PLAT_DBG_PRINTF("[back]   a->cmdline_len: %3u | a->cmdline: '%.*s'", a->cmdline_len, a->cmdline_len, a->cmdline);
 }
@@ -407,15 +406,14 @@ static void acyclic_cmd_show(
     }
 
     if (cmd) {
-        ACYCLIC_PLAT_NEWLINE();
+        ACYCLIC_PLAT_PUTC('\n');
 
         for (; cmd; cmd = (flg_show_all) ? cmd->next : cmd->next_ac) {
-            ACYCLIC_PLAT_PUTS(cmd->name);
-            ACYCLIC_PLAT_SPACE();
+            ACYCLIC_PLAT_PRINTF("%s ", cmd->name);
         }
     }
 
-    ACYCLIC_PLAT_NEWLINE();
+    ACYCLIC_PLAT_PUTC('\n');
     a->flg_prompt = 1;
     a->flg_cmd_show = 1;
 }
@@ -538,10 +536,9 @@ static void acyclic_enter(
 {
 #if ACYCLIC_DBG_ARGS_SHOW == 1
     uint8_t cnt_arg;                            /* argument counter */
-    uint8_t pos_arg;                            /* argument string position */
 #endif
 
-    ACYCLIC_PLAT_NEWLINE();
+    ACYCLIC_PLAT_PUTC('\n');
 
     /* reset application arguments */
     a->arg_cnt = 0;
@@ -558,24 +555,17 @@ static void acyclic_enter(
     /* check if strings are closed */
     if (a->flg_string) {
         a->flg_string = 0;
-        ACYCLIC_PLAT_PUTS_NL("incomplete string found");
+        ACYCLIC_PLAT_PRINTF("incomplete string found\n");
         return;
     }
 
 #if ACYCLIC_DBG_ARGS_SHOW == 1
     if (a->arg_cnt) {
-        ACYCLIC_PLAT_PUTS("args: ");
+        ACYCLIC_PLAT_PRINTF("args: ");
         for (cnt_arg = 0; cnt_arg < a->arg_cnt; cnt_arg++) {
-            ACYCLIC_PLAT_PUTC('[');
-            if (a->args[cnt_arg].cmd) {
-                ACYCLIC_PLAT_PUTC('*');
-            }
-            for (pos_arg = 0; pos_arg < a->args[cnt_arg].len; pos_arg++) {
-                ACYCLIC_PLAT_PUTC(a->args[cnt_arg].name[pos_arg]);
-            }
-            ACYCLIC_PLAT_PUTS("] ");
+            ACYCLIC_PLAT_PRINTF("[%s%.*s] ", (a->args[cnt_arg].cmd) ? "*" : "", a->args[cnt_arg].len, a->args[cnt_arg].name);
         }
-        ACYCLIC_PLAT_NEWLINE();
+        ACYCLIC_PLAT_PUTC('\n');
     }
 #endif /* ACYCLIC_DBG_ARGS_SHOW == 1 */
 
@@ -583,8 +573,9 @@ static void acyclic_enter(
     if (a->args[0].cmd) {
         if (a->func) {
             a->res_func = a->func(a);
+            ACYCLIC_PLAT_PRINTF((!a->res_func) ? "ok\n" : "error\n");
         } else {
-            ACYCLIC_PLAT_PUTS_NL("no function assigned");
+            ACYCLIC_PLAT_PRINTF("no function assigned\n");
         }
     }
 
@@ -605,18 +596,14 @@ static void acyclic_cmdline(
     ACYCLIC_T *a                                /**< instance handle */
 )
 {
-    unsigned int cnt;
-
     /* show prompt */
     if (a->flg_prompt) {
-        ACYCLIC_PLAT_PUTS(ACYCLIC_PROMPT);
+        ACYCLIC_PLAT_PRINTF(ACYCLIC_PROMPT);
         a->flg_prompt = 0;
     }
 
     if (a->flg_cmd_show) {
-        for (cnt = 0; cnt < a->cmdline_len; cnt++) {
-            ACYCLIC_PLAT_PUTC(a->cmdline[cnt]);
-        }
+        ACYCLIC_PLAT_PRINTF("%.*s", a->cmdline_len, a->cmdline);
         a->flg_cmd_show = 0;
     }
 }
@@ -815,7 +802,7 @@ static void acyclic_history_pop(
     a->cmdline_len = 0;
 
     /* remove specific length from length array */
-    memmove(&a->hist[(a->hist_cnt - a->hist_scroll_cnt + 1) * sizeof(a->cmdline_len)], a->hist, (a->hist_scroll_cnt - 1) * sizeof(a->cmdline_len));
+    memmove(&a->hist[(a->hist_scroll_cnt - 1) * sizeof(a->cmdline_len)], a->hist, (a->hist_scroll_cnt - 1) * sizeof(a->cmdline_len));
     a->hist_cnt--;
     a->hist += sizeof(a->cmdline_len);
 
@@ -870,7 +857,7 @@ static void acyclic_history_up(
 
     /* remove current line */
     for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
-        ACYCLIC_PLAT_BACKSPACE();
+        ACYCLIC_BACKSPACE();
     }
 
     /* read current entry length without alignment struggle */
@@ -879,9 +866,7 @@ static void acyclic_history_up(
 
     /* print history line */
     hist_entry = &a->cmdline[ACYCLIC_CMDLINE_LEN - a->hist_scroll_idx];
-    for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
-        ACYCLIC_PLAT_PUTC(hist_entry[cnt]);
-    }
+    ACYCLIC_PLAT_PRINTF("%.*s", a->hist_scroll_len, hist_entry);
 
     /* scroll up */
     a->hist_scroll_cnt++;
@@ -905,7 +890,7 @@ static void acyclic_history_down(
 
     /* remove current line */
     for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
-        ACYCLIC_PLAT_BACKSPACE();
+        ACYCLIC_BACKSPACE();
     }
 
     /* scroll down */
@@ -927,9 +912,7 @@ static void acyclic_history_down(
 
     /* print history line */
     hist_entry = &a->cmdline[ACYCLIC_CMDLINE_LEN - a->hist_scroll_idx];
-    for (cnt = 0; cnt < a->hist_scroll_len; cnt++) {
-        ACYCLIC_PLAT_PUTC(hist_entry[cnt]);
-    }
+    ACYCLIC_PLAT_PRINTF("%.*s", a->hist_scroll_len, hist_entry);
 }
 
 
@@ -946,30 +929,26 @@ static void acyclic_history_dump(
     char *pos;                                  /* position */
     unsigned int hist_len;                      /* history length */
 
-    printf("\n|");
-    for (cnt = 0; cnt < a->cmdline_len; cnt++) {
-        printf("%c", a->cmdline[cnt]);
-    }
-    printf("|");
+    ACYCLIC_PLAT_PRINTF("\n|%.*s|", a->cmdline_len, a->cmdline);
 
     len = (unsigned int) (a->hist - a->cmdline - a->cmdline_len);
     for (cnt = 0; cnt < len; cnt++) {
-        printf("P");
+        ACYCLIC_PLAT_PUTC('P');
     }
-    printf("|");
+    ACYCLIC_PLAT_PUTC('|');
 
     for (cnt = 0; cnt < a->hist_cnt; cnt++) {
         memmove(&hist_len, &a->hist[cnt * sizeof(a->cmdline_len)], sizeof(a->cmdline_len));
-        printf("%u_%u|", cnt, hist_len);
+        ACYCLIC_PLAT_PRINTF("%u_%u|", cnt, hist_len);
     }
 
-    pos = a->hist + a->hist_cnt * sizeof(a->cmdline_len);;
+    pos = a->hist + a->hist_cnt * sizeof(a->cmdline_len);
     for (cnt = a->hist_cnt; cnt; cnt--) {
         memmove(&hist_len, &a->hist[(cnt - 1) * sizeof(a->cmdline_len)], sizeof(a->cmdline_len));
-        printf("%u_%.*s|", cnt - 1, hist_len, pos);
+        ACYCLIC_PLAT_PRINTF("%u_%.*s|", cnt - 1, hist_len, pos);
         pos += hist_len;
     }
-    printf("\n");
+    ACYCLIC_PLAT_PUTC('\n');
 
     a->flg_cmd_show = 1;
     a->flg_prompt = 1;
