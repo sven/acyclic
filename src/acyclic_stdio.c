@@ -6,7 +6,7 @@
  * Licensed under the MIT license, see LICENSE for details.
  */
 #include <acyclic.h>
-//#include "acyclic_stdio.h"
+#include "acyclic_stdio.h"
 
 
 /*****************************************************************************/
