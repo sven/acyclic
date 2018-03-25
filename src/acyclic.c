@@ -545,6 +545,10 @@ static void acyclic_enter(
     a->args[0].cmd = NULL;
     a->func = NULL;
 
+    /* add null terminator to string (uses same spaces as the movebyte) */
+    a->cmdline[a->cmdline_len] = ACYCLIC_STR_TERM;
+
+    /* parse commandline */
     acyclic_ac(a);
     if (a->flg_exit) {
         return;

@@ -86,6 +86,8 @@ struct ACYCLIC_T;
 
 #define ACYCLIC_BACKSPACE()         ACYCLIC_PLAT_PRINTF("\b \b")
 
+#define ACYCLIC_STR_TERM            0
+
 
 /*****************************************************************************/
 /* Forward declarations */
