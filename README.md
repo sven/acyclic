@@ -39,21 +39,21 @@ A small overview of the current footprint when compiling the application that
 is used for the testcases is shown here.
 
 ```
-$> make size_all
+$> make size_all # commit: f385339b158ecee0c3d454100e7fbdc45201721a
 
 History disabled
 ----------------
    text    data     bss     dec     hex filename
-   8429    1288     296   10013    271d build/acyclic_linux.elf
-   2778     526      98    3402     d4a build/acyclic_atmega8.elf
-   2878     526      98    3502     dae build/acyclic_atmega328p.elf
+   8301    1280     296    9877    2695 build/acyclic_linux.elf
+   2738     526      98    3362     d22 build/acyclic_atmega8.elf
+   2840     526      98    3464     d88 build/acyclic_atmega328p.elf
 
 History enabled
 ---------------
    text    data     bss     dec     hex filename
-  10299    1296     320   11915    2e8b build/acyclic_linux.elf
-   3592     526     108    4226    1082 build/acyclic_atmega8.elf
-   3694     526     108    4328    10e8 build/acyclic_atmega328p.elf
+  10231    1288     320   11839    2e3f build/acyclic_linux.elf
+   3584     526     108    4218    107a build/acyclic_atmega8.elf
+   3686     526     108    4320    10e0 build/acyclic_atmega328p.elf
 ```
 
 
