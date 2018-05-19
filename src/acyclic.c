@@ -238,8 +238,7 @@ static uint8_t acyclic_srch(
             case ACYCLIC_CMP_MATCH:
                 flg_match_full = 1;
 
-		/* forced fallthrough */
-		__attribute__((fallthrough));
+		/* fall through */
 
             case ACYCLIC_CMP_END_FIRST:
                 /* found AC match */
