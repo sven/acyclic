@@ -11,6 +11,7 @@
   * Linux (eg. Ubuntu 16.10)
   * Atmega8 (eg. myAVR Board MK1)
   * Atmega328p (eg. Arduino Uno, Arduino Nano)
+  * [PINKIE](https://github.com/sven/pinkie)
 
 
 ## Quickstart
@@ -69,7 +70,7 @@ History enabled
 
 ## MIT License
 
-    Copyright (c) 2016-2017, Sven Bachmann <dev@mcbachmann.de>
+    Copyright (c) 2016-2018, Sven Bachmann <dev@mcbachmann.de>
     ACyCLIC at GitHub: https://github.com/sven/acyclic
     
     Permission is hereby granted, free of charge, to any person obtaining a copy
